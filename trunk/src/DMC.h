@@ -22,17 +22,25 @@ class DMC
 
         DMC();
         virtual ~DMC();
+        int*    getFrecuencias();
+        void    actualizarModelo(Direccion direccion);
 
 //&---------------------------------------------------------------------------&
 //& P R I V A T E
 //&---------------------------------------------------------------------------&
     private:
 
+        /** Atributos   */
         int                 M1;
         int                 M2;
         Estado*             estadoActual;
         std::list<Estado*>  estados;
+        Nombre              cantidadEstadosCreados;
 
+        /** Metodos     */
+        void crearArbolInicial();
+        bool hayQueClonar(Direccion direccion);
+        void clonarEstado(Direccion direccion);
 
 };
 #endif // DMC_H

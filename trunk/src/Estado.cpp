@@ -6,23 +6,83 @@
 //---------------------------------------------------------------------------&
 */
 //&---------------------------------------------------------------------------&
-//& Estado
+//& Estado: Constructor de la clase Estado
 //&---------------------------------------------------------------------------&
 Estado::Estado()
+{}
+
+//&---------------------------------------------------------------------------&
+//& Estado: Constructor de la clase Estado
+//&---------------------------------------------------------------------------&
+Estado::Estado(Nombre nombre)
 {
-    //ctor
+    nombre = nombre;
+    frecuencias[BITS_00] = 0;
+    frecuencias[BITS_01] = 0;
+    frecuencias[BITS_10] = 0;
+    frecuencias[BITS_11] = 0;
 }
 
 //&---------------------------------------------------------------------------&
-//& ~Estado
+//& ~Estado: Destructor de la clase Estado
 //&---------------------------------------------------------------------------&
 Estado::~Estado()
 {
     //dtor
 }
 
+//&---------------------------------------------------------------------------&
+//& getFrecuencias: Devolvemos las frecuencias de los siguientes estados
+//&---------------------------------------------------------------------------&
+int* Estado::getFrecuencias()
+{
+    return frecuencias;
+}
 
+//&---------------------------------------------------------------------------&
+//& setFrecuencia: Seteamos la frecuencia para el siguiente estado
+//&---------------------------------------------------------------------------&
+void Estado::setFrecuencia(Direccion direccion, int frecuencia)
+{
+    frecuencias[direccion] = frecuencia;
+}
 
+//&---------------------------------------------------------------------------&
+//& getProximoEstado: Devolvemos el siguiente estado asociado a la direccion
+//& recibida por parametro (00, 01, 10, 11)
+//&---------------------------------------------------------------------------&
+Estado* Estado::getEstadoSiguiente(Direccion direccion)
+{
+    return estadosSiguientes[direccion];
+}
+
+//&---------------------------------------------------------------------------&
+//& setProximoEstado: Seteamos el siguiente estado asociado a la direccion
+//& recibida por parametro (00, 01, 10, 11)
+//&---------------------------------------------------------------------------&
+void Estado::setEstadoSiguiente(Direccion direccion, Estado *estadoSiguiente)
+{
+    estadosSiguientes[direccion] = estadoSiguiente;
+}
+
+//&---------------------------------------------------------------------------&
+//& aumentarFrecuencia: Aumentamos la frecuencia en la direccion dada
+//&---------------------------------------------------------------------------&
+void Estado::aumentarFrecuencia(Direccion direccion, int cantidad )
+{
+    frecuencias[direccion] += cantidad;
+}
+
+//&---------------------------------------------------------------------------&
+//& getCantidadVisitas: Devolvemos la cantidad de visitas que tuvo el estado
+//&---------------------------------------------------------------------------&
+int Estado::getCantidadVisitas()
+{
+    return  frecuencias[BITS_00] +
+            frecuencias[BITS_01] +
+            frecuencias[BITS_10] +
+            frecuencias[BITS_11];
+}
 
 /**
 //---------------------------------------------------------------------------&

@@ -22,4 +22,8 @@ const Direccion BITS_01 = 1;
 const Direccion BITS_10 = 2;
 const Direccion BITS_11 = 3;
 
+
+const int MIN_CNT1 = 80;
+const int MIN_CNT2 = 40;
+
 #endif // CONSTANTES_H_INCLUDED
