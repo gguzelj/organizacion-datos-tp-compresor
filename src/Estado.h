@@ -17,7 +17,17 @@ class Estado
 //&---------------------------------------------------------------------------&
     public:
         Estado();
+        Estado(Nombre nombre);
         virtual ~Estado();
+
+        int*    getFrecuencias();
+        void    setFrecuencia(Direccion direccion, int frecuencia);
+        Estado* getEstadoSiguiente(Direccion direccion);
+        void    setEstadoSiguiente(Direccion direccion, Estado *estadoSiguiente);
+
+        void    aumentarFrecuencia(Direccion direccion, int cantidad );
+
+        int     getCantidadVisitas();
 
 //&---------------------------------------------------------------------------&
 //& P R I V A T E
@@ -25,7 +35,7 @@ class Estado
     private:
         Nombre      nombre;
         Frecuencias frecuencias;
-        Estado*     proximosEstados[4];
+        Estado*     estadosSiguientes[4];
 };
 
 #endif // ESTADO_H
