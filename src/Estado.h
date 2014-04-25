@@ -26,6 +26,7 @@ class Estado
         void    setEstadoSiguiente(Direccion direccion, Estado *estadoSiguiente);
 
         void    aumentarFrecuencia(Direccion direccion, int cantidad );
+        int     getFrecuencia(Direccion direccion);
 
         int     getCantidadVisitas();
 
@@ -39,3 +40,4 @@ class Estado
 };
 
 #endif // ESTADO_H
+

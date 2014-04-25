@@ -38,6 +38,13 @@ int* Estado::getFrecuencias()
 {
     return frecuencias;
 }
+//&---------------------------------------------------------------------------&
+//& getFrecuencia: Devolvemos la frecuencia correspondiente a una direccion
+//&---------------------------------------------------------------------------&
+int Estado::getFrecuencia(Direccion direccion)
+{
+    return frecuencias[direccion];
+}
 
 //&---------------------------------------------------------------------------&
 //& setFrecuencia: Seteamos la frecuencia para el siguiente estado
@@ -89,3 +96,4 @@ int Estado::getCantidadVisitas()
 // P R I V A T E
 //---------------------------------------------------------------------------&
 */
+

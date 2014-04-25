@@ -31,8 +31,6 @@ class DMC
     private:
 
         /** Atributos   */
-        int                 M1;
-        int                 M2;
         Estado*             estadoActual;
         std::list<Estado*>  estados;
         Nombre              cantidadEstadosCreados;
@@ -44,3 +42,4 @@ class DMC
 
 };
 #endif // DMC_H
+
