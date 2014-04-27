@@ -42,4 +42,3 @@ class DMC
 
 };
 #endif // DMC_H
-
