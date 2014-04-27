@@ -30,7 +30,7 @@ DMC::~DMC()
     {
         (*iter)->~Estado();
 
-        delete (*iter);
+        delete *iter;
 
         iter++;
     }
@@ -52,6 +52,13 @@ int* DMC::getFrecuencias()
 //&---------------------------------------------------------------------------&
 void DMC::actualizarModelo(Direccion direccion)
 {
+    //Validamos si es necesario clonar
+    if(hayQueClonar(direccion))
+    {
+        clonarEstado(direccion);
+        return;
+    }
+
     //Aumentamos la frecuencia en la direccion dada
     estadoActual->aumentarFrecuencia(direccion,1);
 
@@ -62,13 +69,6 @@ void DMC::actualizarModelo(Direccion direccion)
             crearArbolInicial();
             return;
         }
-
-    //Validamos si es necesario clonar
-    if(hayQueClonar(direccion))
-    {
-        clonarEstado(direccion);
-        return;
-    }
 
     //movemos el estado actual
     estadoActual = estadoActual->getEstadoSiguiente(direccion);
@@ -101,6 +101,7 @@ void DMC::crearArbolInicial()
 
     //Creamos la raiz del arbol
     raiz = new Estado( cantidadEstadosCreados );
+    estados.push_back(raiz);
 
     //Agregamos la raiz a la cola y comenzamos a procesar
     colaDeEstados.push(raiz);
@@ -133,16 +134,17 @@ void DMC::crearArbolInicial()
 
     //Dejamos la raiz del arbol como estado inicial
     estadoActual = raiz;
+
 }
 
 
 //&---------------------------------------------------------------------------&
 //& hayQueClonar: En este metodo validamos si es necesario hacer la clonacion:
 //&
-//& El Estado candidato se clona si y sÃ³lo si el nÃºmero de transiciones
+//& El Estado candidato se clona si y sólo si el número de transiciones
 //& observadas desde el estado actual al estado candidato es mayor que MIN_CNTI,
-//& y el nÃºmero de transiciones observadas desde todos los estados (con
-//& excepciÃ³n del estado actual) en el Estado candidato es mayor que MIN_CNT2.
+//& y el número de transiciones observadas desde todos los estados (con
+//& excepción del estado actual) en el Estado candidato es mayor que MIN_CNT2.
 //&---------------------------------------------------------------------------&
 bool DMC::hayQueClonar(Direccion direccion)
 {
@@ -153,7 +155,8 @@ bool DMC::hayQueClonar(Direccion direccion)
     cantVisitas = estadoActual->getFrecuencia(direccion);
 
     //Calculamos las visitas que tuvo el nodo a clonar, sin tener en cuenta el actual
-    cantVisitasOtrosEstados = cantVisitas - estadoActual->getFrecuencia(direccion);
+    cantVisitasOtrosEstados = estadoActual->getEstadoSiguiente(direccion)->getCantidadVisitas();
+    cantVisitasOtrosEstados -= cantVisitas;
 
     return (cantVisitas > MIN_CNT1 && cantVisitasOtrosEstados > MIN_CNT2);
 }
@@ -194,4 +197,3 @@ void DMC::clonarEstado(Direccion direccion)
     //Movemos al estado actual
     estadoActual = nvoEst;
 }
-

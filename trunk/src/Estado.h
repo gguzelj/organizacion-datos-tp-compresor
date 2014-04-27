@@ -40,4 +40,3 @@ class Estado
 };
 
 #endif // ESTADO_H
-

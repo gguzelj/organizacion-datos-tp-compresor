@@ -24,10 +24,9 @@ const Direccion BITS_10 = 2;
 const Direccion BITS_11 = 3;
 
 
-const int MIN_CNT1 = 80;
-const int MIN_CNT2 = 60;
+const int MIN_CNT1 = 100;
+const int MIN_CNT2 = 10;
 
 const unsigned long LIMITE_ESTADOS = 500000;
 
 #endif // CONSTANTES_H_INCLUDED
-

@@ -14,9 +14,9 @@ Estado::Estado()
 //&---------------------------------------------------------------------------&
 //& Estado: Constructor de la clase Estado
 //&---------------------------------------------------------------------------&
-Estado::Estado(Nombre nombre)
+Estado::Estado(Nombre nom)
 {
-    nombre = nombre;
+    nombre = nom;
     frecuencias[BITS_00] = 0;
     frecuencias[BITS_01] = 0;
     frecuencias[BITS_10] = 0;
@@ -96,4 +96,3 @@ int Estado::getCantidadVisitas()
 // P R I V A T E
 //---------------------------------------------------------------------------&
 */
-
