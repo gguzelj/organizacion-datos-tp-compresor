@@ -5,6 +5,7 @@
 
 #include "src/DMC.h"
 #include "src/Estado.h"
+#include "src/CompresorAritmetico.h"
 
 using namespace std;
 
