@@ -43,7 +43,7 @@ DMC::~DMC()
 //&---------------------------------------------------------------------------&
 int* DMC::getFrecuencias()
 {
-    return estadoActual->getFrecuencias();
+    return estadoActual->frecuencias;
 }
 
 //&---------------------------------------------------------------------------&
@@ -60,7 +60,7 @@ void DMC::actualizarModelo(Direccion direccion)
     }
 
     //Aumentamos la frecuencia en la direccion dada
-    estadoActual->aumentarFrecuencia(direccion,1);
+    estadoActual->frecuencias[direccion] += 1;
 
     //Controlamos la cantidad de estados creados
     if(cantidadEstadosCreados > LIMITE_ESTADOS)
@@ -71,7 +71,7 @@ void DMC::actualizarModelo(Direccion direccion)
         }
 
     //movemos el estado actual
-    estadoActual = estadoActual->getEstadoSiguiente(direccion);
+    estadoActual = estadoActual->estadosSiguientes[direccion];
 }
 
 
@@ -80,7 +80,6 @@ void DMC::actualizarModelo(Direccion direccion)
 // P R I V A T E
 //---------------------------------------------------------------------------&
 */
-
 //&---------------------------------------------------------------------------&
 //& crearArbolInicial: Creamos el arbol inicial con el que comenzamos a operar
 //& Las correlaciones en los archivos se dan mas frecuentemente entre bytes que
@@ -117,7 +116,7 @@ void DMC::crearArbolInicial()
         {
             aux = new Estado(++cantidadEstadosCreados);
 
-            est->setEstadoSiguiente(i,aux);
+            est->estadosSiguientes[i] = aux;
             estados.push_back(aux);
         }
 
@@ -125,16 +124,15 @@ void DMC::crearArbolInicial()
         //y referenciamos cada hoja a la raiz
         if(cantidadEstadosCreados < limite)
             for(int i = 0; i<4 ; i++)
-                colaDeEstados.push(est->getEstadoSiguiente(i));
+                colaDeEstados.push(est->estadosSiguientes[i]);
         else
             for(int i = 0; i<4 ; i++)
                 for(int j = 0; j<4; j++)
-                    est->getEstadoSiguiente(i)->setEstadoSiguiente(j,raiz);
+                    est->estadosSiguientes[i]->estadosSiguientes[j] = raiz;
     }
 
     //Dejamos la raiz del arbol como estado inicial
     estadoActual = raiz;
-
 }
 
 
@@ -152,10 +150,10 @@ bool DMC::hayQueClonar(Direccion direccion)
     int cantVisitasOtrosEstados; //Cantidad de visitas desde otros nodos
 
     //Buscamos la cantidad de veces que fue visitado el nodo a clonar
-    cantVisitas = estadoActual->getFrecuencia(direccion);
+    cantVisitas = estadoActual->frecuencias[direccion];
 
     //Calculamos las visitas que tuvo el nodo a clonar, sin tener en cuenta el actual
-    cantVisitasOtrosEstados = estadoActual->getEstadoSiguiente(direccion)->getCantidadVisitas();
+    cantVisitasOtrosEstados = estadoActual->estadosSiguientes[direccion]->getCantidadVisitas();
     cantVisitasOtrosEstados -= cantVisitas;
 
     return (cantVisitas > MIN_CNT1 && cantVisitasOtrosEstados > MIN_CNT2);
@@ -169,17 +167,17 @@ void DMC::clonarEstado(Direccion direccion)
 {
     double ratio;
 
-    Estado *sigEst = estadoActual->getEstadoSiguiente(direccion);
+    Estado *sigEst = estadoActual->estadosSiguientes[direccion];
 
     //Creamos un nuevo estado
     Estado *nvoEst = new Estado(++cantidadEstadosCreados);
     estados.push_back(nvoEst);
 
     //Direccionamos el estado actual al nuevo estado
-    estadoActual->setEstadoSiguiente(direccion, nvoEst);
+    estadoActual->estadosSiguientes[direccion] = nvoEst;
 
     //Realizamos una ponderacion para distribuir las frecuencias
-    ratio = estadoActual->getFrecuencia(direccion) /
+    ratio = estadoActual->frecuencias[direccion] /
             sigEst->getCantidadVisitas();
 
     //Actualizamos las frecuencias de acuerdo a la ponderacion calculada
@@ -187,11 +185,11 @@ void DMC::clonarEstado(Direccion direccion)
     {
 
         //El nuevo nodo hereda la misma salida que el original
-        nvoEst->setEstadoSiguiente(dir, sigEst->getEstadoSiguiente(dir));
+        nvoEst->estadosSiguientes[dir] = sigEst->estadosSiguientes[dir];
 
         //Distribuimos las frecuencias
-        nvoEst->setFrecuencia(dir,ratio*sigEst->getFrecuencia(dir));
-        sigEst->setFrecuencia(dir,sigEst->getFrecuencia(dir) - nvoEst->getFrecuencia(dir));
+        nvoEst->frecuencias[dir] = ratio*sigEst->frecuencias[dir];
+        sigEst->frecuencias[dir] = sigEst->frecuencias[dir] - nvoEst->frecuencias[dir];
     }
 
     //Movemos al estado actual
