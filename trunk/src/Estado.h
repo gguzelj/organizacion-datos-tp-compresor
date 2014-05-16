@@ -30,13 +30,16 @@ class Estado
 
         int     getCantidadVisitas();
 
+
+        Frecuencias frecuencias;            //Atributos publicos solo por performance
+        Estado*     estadosSiguientes[4];
+
 //&---------------------------------------------------------------------------&
 //& P R I V A T E
 //&---------------------------------------------------------------------------&
     private:
         Nombre      nombre;
-        Frecuencias frecuencias;
-        Estado*     estadosSiguientes[4];
+
 };
 
 #endif // ESTADO_H
