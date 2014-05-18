@@ -1,11 +1,7 @@
 #ifndef COMPRESOR_H
 #define COMPRESOR_H
 
-#include <iostream>
-#include <stdio.h>
-#include <stdlib.h>
-#include <fstream>
-
+#include "utils/constantes.h"
 #include "DMC.h"
 #include "Estado.h"
 #include "FileManager.h"

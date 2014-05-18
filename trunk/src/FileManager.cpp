@@ -25,6 +25,41 @@ FileManager::~FileManager()
 {
 }
 
+//&---------------------------------------------------------------------------&
+//& open: Abrimos un archivo en el modo especificado
+//&---------------------------------------------------------------------------&
+int FileManager::open(const char *filename, std::ios::openmode mode)
+{
+    file_.open(filename, mode);
+
+    //Calculamos la cantidad de particiones que debemos hacer
+    if (file_.is_open())
+    {
+        file_.seekg(0, file_.end);
+        fileSize_ = file_.tellg();
+        cantPartes_ = 1 + (fileSize_ / TAMANO_MAX_BUFFER);
+        filePos_ = 0;
+        bytesEmitidos_ = 0;
+        bitsEmitidos_ = 0;
+        bufferVacio_ = true;
+        ultimoBloque_ = false;
+
+    }
+    else
+    {
+        return ERROR_APERTURA_ARCHIVO;
+    }
+    return 0;
+}
+
+//&---------------------------------------------------------------------------&
+//& close: Cerramos el archivo
+//&---------------------------------------------------------------------------&
+void FileManager::close()
+{
+    file_.close();
+}
+
 /**
 //---------------------------------------------------------------------------&
 // Clase:       FileManagerInput
@@ -54,41 +89,6 @@ FileManagerInput::~FileManagerInput()
     {
         file_.close();
     }
-}
-
-//&---------------------------------------------------------------------------&
-//& open: Abrimos un archivo en el modo especificado
-//&---------------------------------------------------------------------------&
-int FileManagerInput::open(const char *filename, std::ios::openmode mode)
-{
-    file_.open(filename, mode);
-
-    //Calculamos la cantidad de particiones que debemos hacer
-    if (file_.is_open())
-    {
-        file_.seekg(0, file_.end);
-        fileSize_ = file_.tellg();
-        cantPartes_ = 1 + (fileSize_ / TAMANO_MAX_BUFFER);
-        filePos_ = 0;
-        bytesEmitidos_ = 0;
-        bitsEmitidos_ = 0;
-        bufferVacio_ = true;
-        ultimoBloque_ = false;
-
-    }
-    else
-    {
-        return ERROR_APERTURA_ARCHIVO;
-    }
-    return 0;
-}
-
-//&---------------------------------------------------------------------------&
-//& close: Cerramos el archivo
-//&---------------------------------------------------------------------------&
-void FileManagerInput::close()
-{
-    file_.close();
 }
 
 //&---------------------------------------------------------------------------&
@@ -205,7 +205,29 @@ FileManagerOutput::FileManagerOutput()
 //&---------------------------------------------------------------------------&
 FileManagerOutput::~FileManagerOutput()
 {
+    delete[] buffer_;
+
+    if (file_.is_open())
+    {
+        file_.close();
+    }
 }
+
+//&---------------------------------------------------------------------------&
+//& EscribirBits:   Metodo encargado de escribir la cantidad de bits recibidada
+//&                 por parametro en el archivo de salida
+//&---------------------------------------------------------------------------&
+int FileManagerOutput::escribirByte(Byte byte)
+{
+    if(!file_.is_open())
+        return ERROR_ARCHIVO_CERRADO;
+
+    char charByte = byte.to_ulong();
+    file_.write( &charByte, sizeof(charByte));
+
+    return 0;
+}
+
 /**
 //---------------------------------------------------------------------------&
 // P R I V A T E

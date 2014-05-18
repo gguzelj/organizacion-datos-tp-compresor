@@ -1,11 +1,11 @@
 #ifndef CONSTANTES_H_INCLUDED
 #define CONSTANTES_H_INCLUDED
 
-#include <iostream>
-#include <stdio.h>
-#include <stdlib.h>
+#include <bitset>
 #include <fstream>
-#include <stddef.h>
+#include <iostream>
+#include <list>
+#include <string>
 
 /**
 //---------------------------------------------------------------------------&
@@ -15,12 +15,10 @@
 */
 
 /*  Tipos de datos  */
-typedef unsigned char Byte;
+typedef std::bitset<8> Byte;
 typedef unsigned char Direccion;
 typedef unsigned long Nombre;
 typedef int Frecuencias[4];
-
-/*  Errores */
 
 /*  Constantes  */
 const Direccion BITS_00                 = 0;
@@ -38,6 +36,7 @@ const unsigned long LIMITE_ESTADOS      = 50000;
 const unsigned int TAMANO_MAX_BUFFER    = 10485760; //10Mb
 
 const int ERROR_APERTURA_ARCHIVO        = 1;
+const int ERROR_ARCHIVO_CERRADO         = 1;
 const int ERROR_EOF                     = 4;
 
 
