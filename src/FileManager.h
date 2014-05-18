@@ -5,9 +5,9 @@
 
 /**
 //---------------------------------------------------------------------------&
-// Clase:       FileManager
-// Descripcion: Esta clase es la encargada de hacer la lectura/escritura de
-// los archivos a comprimir/descomprimir
+// Clase:           FileManager
+// Descripcion:     Esta clase es la encargada de hacer la lectura/escritura
+//                  de los archivos a comprimir/descomprimir
 //---------------------------------------------------------------------------&
 */
 class FileManager
@@ -15,11 +15,27 @@ class FileManager
     public:
     FileManager();
     virtual ~FileManager();
+
+    int open(const char *filename, std::ios::openmode mode);
+    void close();
+
+    protected:
+        std::fstream   file_;
+        size_t          fileSize_;
+        char*           buffer_;
+        size_t          bufferSize_;
+        unsigned int    cantPartes_;
+        std::streampos  filePos_;
+        unsigned short  bitsEmitidos_;
+        unsigned long   bytesEmitidos_;
+        bool            bufferVacio_;
+        bool            ultimoBloque_;
 };
 /**
 //---------------------------------------------------------------------------&
-// Clase:       FileManagerInput
-// Descripcion: Clase encargada de cargar y manejar el archivo a comprimir
+// Clase:           FileManagerInput
+// Descripcion:     Clase encargada de cargar y almacenar el archivo a
+//                  comprimir / descomprimir
 //---------------------------------------------------------------------------&
 */
 class FileManagerInput : public FileManager
@@ -32,26 +48,12 @@ class FileManagerInput : public FileManager
         FileManagerInput();
         virtual ~FileManagerInput();
 
-        int open(const char *filename, std::ios::openmode mode);
-        void close();
-
         Direccion leerDosBits();
 
 //&---------------------------------------------------------------------------&
 //& P R I V A T E
 //&---------------------------------------------------------------------------&
     private:
-
-        std::ifstream   file_;
-        size_t          fileSize_;
-        char*           buffer_;
-        size_t          bufferSize_;
-        unsigned int    cantPartes_;
-        std::streampos  filePos_;
-        unsigned short  bitsEmitidos_;
-        unsigned long   bytesEmitidos_;
-        bool            bufferVacio_;
-        bool            ultimoBloque_;
 
         int read();
 };
@@ -60,8 +62,9 @@ class FileManagerInput : public FileManager
 
 /**
 //---------------------------------------------------------------------------&
-// Clase:       FileManagerOutput
-// Descripcion: Clase encargada de guardar y manejar el archivo a comprimido
+// Clase:           FileManagerOutput
+// Descripcion:     Clase encargada de guardar y manejar el archivo a
+//                  comprimir / descomprimir
 //---------------------------------------------------------------------------&
 */
 class FileManagerOutput : public FileManager {
@@ -73,10 +76,11 @@ class FileManagerOutput : public FileManager {
         FileManagerOutput();
         virtual ~FileManagerOutput();
 
+        int escribirByte(Byte byte);
+
 //&---------------------------------------------------------------------------&
 //& P R I V A T E
 //&---------------------------------------------------------------------------&
     private:
-
 };
 #endif // FILEMANAGER_H
