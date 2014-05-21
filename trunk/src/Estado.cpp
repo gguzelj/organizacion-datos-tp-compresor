@@ -17,10 +17,10 @@ Estado::Estado()
 Estado::Estado(Nombre nom)
 {
     nombre = nom;
-    frecuencias[BITS_00] = 0;
-    frecuencias[BITS_01] = 0;
-    frecuencias[BITS_10] = 0;
-    frecuencias[BITS_11] = 0;
+    frecuencias[BITS_00] = 1;
+    frecuencias[BITS_01] = 1;
+    frecuencias[BITS_10] = 1;
+    frecuencias[BITS_11] = 1;
 }
 
 //&---------------------------------------------------------------------------&

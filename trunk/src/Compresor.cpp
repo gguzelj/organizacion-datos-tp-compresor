@@ -13,9 +13,10 @@ using namespace std;
 //&---------------------------------------------------------------------------&
 Compresor::Compresor()
 {
-    this->dmc     = new DMC();
-    this->input   = new FileManagerInput();
-    this->output  = new FileManagerOutput();
+    this->dmc                 = new DMC();
+    this->input               = new FileManagerInput();
+    this->output              = new FileManagerOutput();
+    this->compresorAritmetico = new CompresorAritmetico();
 }
 
 //&---------------------------------------------------------------------------&
@@ -79,7 +80,7 @@ void Compresor::comprimir(char *filename)
     while(bits != ERROR_EOF)
     {
         //Comprimimos
-        //compresorAritmetico->comprimir(bits,dmc->getFrecuencias());
+        compresorAritmetico->comprimir(bits,dmc->getFrecuencias());
 
         //Actualizamos el modelo DMC
         dmc->actualizarModelo(bits);

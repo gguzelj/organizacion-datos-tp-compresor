@@ -1,33 +1,37 @@
 #ifndef COMPRESORARITMETICO_H
 #define COMPRESORARITMETICO_H
-#define TECHO 1000000000
-#define PISO 0
-#include <list>
-#include "Intervalo.h"
 
+#include "utils/constantes.h"
+
+/**
+//---------------------------------------------------------------------------&
+// Clase:           CompresorAritmetico
+// Descripcion:     Esta clase es la encargada de hacer la compresion /
+//                  descompresion aritmetica de los archivos
+//---------------------------------------------------------------------------&
+*/
 class CompresorAritmetico
 {
+//&---------------------------------------------------------------------------&
+//& P U B L I C
+//&---------------------------------------------------------------------------&
     public:
 
-    /**Metodos Publicos*/
-        CompresorAritmetico(int cantidadDeCaracteresDistintos);
-        void comprimirCaracterConFrecuencias(Caracter* caracterAcomprimir, std::list<Caracter*>& frecuenciasDeCaracteres);
-        unsigned long int getValorDeCompresionFinal();
+        CompresorAritmetico();
         virtual ~CompresorAritmetico();
 
-    protected:
+        void comprimir(Direccion bits, int* frecuencias);
+
+//&---------------------------------------------------------------------------&
+//& P R I V A T E
+//&---------------------------------------------------------------------------&
     private:
 
-    /**Atributos*/
-        /*std::list <Caracter> caracteresAcomprimir;*/
-        std::list <Intervalo*> intervalos;
-        unsigned long int techo;
-        unsigned long int piso;
-        int cantidadDeCaracteresVistos;
+        unsigned short  piso;
+        unsigned short  techo;
+        unsigned char   underflow;
 
-    /**Metodos Privados*/
-        void eliminarIntervalos();
-
+        void            guardarBitsComprimidos();
 };
 
 #endif // COMPRESORARITMETICO_H

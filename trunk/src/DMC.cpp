@@ -112,7 +112,7 @@ void DMC::crearArbolInicial()
         colaDeEstados.pop();
 
         //Agregamos los 4 estados siguientes posibles
-        for(int i = 0; i<4 ; i++)
+        for(register int i = 0; i<4 ; i++)
         {
             aux = new Estado(++cantidadEstadosCreados);
 
@@ -123,11 +123,11 @@ void DMC::crearArbolInicial()
         //En caso de llegar al limite fijado, dejamos de agregar nuevos estados,
         //y referenciamos cada hoja a la raiz
         if(cantidadEstadosCreados < limite)
-            for(int i = 0; i<4 ; i++)
+            for(register int i = 0; i<4 ; i++)
                 colaDeEstados.push(est->estadosSiguientes[i]);
         else
-            for(int i = 0; i<4 ; i++)
-                for(int j = 0; j<4; j++)
+            for(register int i = 0; i<4 ; i++)
+                for(register int j = 0; j<4; j++)
                     est->estadosSiguientes[i]->estadosSiguientes[j] = raiz;
     }
 
@@ -177,11 +177,11 @@ void DMC::clonarEstado(Direccion direccion)
     estadoActual->estadosSiguientes[direccion] = nvoEst;
 
     //Realizamos una ponderacion para distribuir las frecuencias
-    ratio = estadoActual->frecuencias[direccion] /
-            sigEst->getCantidadVisitas();
+    ratio = (double) estadoActual->frecuencias[direccion] /
+            (double) sigEst->getCantidadVisitas();
 
     //Actualizamos las frecuencias de acuerdo a la ponderacion calculada
-    for( short dir = 0; dir<4; dir++)
+    for(register int dir = 0; dir<4; dir++)
     {
 
         //El nuevo nodo hereda la misma salida que el original

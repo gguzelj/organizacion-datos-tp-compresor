@@ -36,7 +36,7 @@ const unsigned long LIMITE_ESTADOS      = 50000;
 const unsigned int TAMANO_MAX_BUFFER    = 10485760; //10Mb
 
 const int ERROR_APERTURA_ARCHIVO        = 1;
-const int ERROR_ARCHIVO_CERRADO         = 1;
+const int ERROR_ARCHIVO_CERRADO         = 2;
 const int ERROR_EOF                     = 4;
 
 
