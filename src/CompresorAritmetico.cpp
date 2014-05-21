@@ -1,101 +1,82 @@
 #include "CompresorAritmetico.h"
-#include <stdio.h>
 
-CompresorAritmetico::CompresorAritmetico(int cantidadDeCaracteresDistintos)
+/**
+//---------------------------------------------------------------------------&
+// P U B L I C
+//---------------------------------------------------------------------------&
+*/
+
+//&---------------------------------------------------------------------------&
+//& CompresorAritmetico: Constructor
+//&---------------------------------------------------------------------------&
+CompresorAritmetico::CompresorAritmetico()
 {
-
-    techo = TECHO;
-
-    piso = PISO;
-
-    cantidadDeCaracteresVistos = cantidadDeCaracteresDistintos;
-
+    piso = 0;
+    techo = ~0;
+    underflow = 0;
 }
 
-void CompresorAritmetico::comprimirCaracterConFrecuencias(Caracter* caracterAcomprimir, std::list<Caracter*>& frecuenciasDeCaracteres)
-{
-
-    unsigned long int pisoDelIntervalo = piso;
-
-    unsigned long int techoDelIntervalo;
-
-    unsigned long int unRango;
-
-    unsigned long int nuevoPiso = PISO;
-
-    unsigned long int nuevoTecho = TECHO;
-
-    std::list<Caracter*>::iterator iterador = frecuenciasDeCaracteres.begin();
-
-    while(iterador != frecuenciasDeCaracteres.end())
-    {
-
-        unRango = (((techo - piso) / cantidadDeCaracteresVistos) * ((*iterador)->getFrecuencia()));
-
-        techoDelIntervalo = pisoDelIntervalo + unRango;
-
-        if((*iterador)->esIgualAlCaracter(caracterAcomprimir))
-        {
-
-            nuevoPiso = pisoDelIntervalo;
-
-            nuevoTecho = techoDelIntervalo;
-
-        }
-
-        eliminarIntervalos();
-
-        intervalos.push_back(new Intervalo(&pisoDelIntervalo, &techoDelIntervalo, (*iterador)));
-
-        pisoDelIntervalo = techoDelIntervalo;
-
-        iterador++;
-
-    }
-
-    piso = nuevoPiso;
-
-    techo = nuevoTecho;
-
-    cantidadDeCaracteresVistos++;
-
-    delete caracterAcomprimir;
-
-}
-
-unsigned long int CompresorAritmetico::getValorDeCompresionFinal()
-{
-
-    return piso;
-
-}
-
-void CompresorAritmetico::eliminarIntervalos()
-{
-
-    if(!(intervalos.empty()))
-    {
-
-        std::list<Intervalo*>::iterator iterador = intervalos.begin();
-
-        while(iterador != intervalos.end())
-        {
-
-            delete (*iterador);
-
-            iterador++;
-
-        }
-
-        intervalos.clear();
-
-    }
-
-}
-
+//&---------------------------------------------------------------------------&
+//& ~CompresorAritmetico: Destructor
+//&---------------------------------------------------------------------------&
 CompresorAritmetico::~CompresorAritmetico()
 {
+    //dtor
+}
 
-    eliminarIntervalos();
+//&---------------------------------------------------------------------------&
+//& comprimir:  Comprimimos los bits recibidos
+//&             http://www.arturocampos.com/ac_arithmetic.html
+//&---------------------------------------------------------------------------&
+void CompresorAritmetico::comprimir(Direccion bits, int* frecuencias)
+{
+    unsigned short nuevoTecho = techo;
+    unsigned short nuevoPiso = piso;
+    unsigned long rango = techo - piso + 1;
+    unsigned long totalFrecuencias = 0;
 
+    //Sumamos el total de todas las posibilidades
+    totalFrecuencias += frecuencias[BITS_00] + frecuencias[BITS_01];
+    totalFrecuencias += frecuencias[BITS_10] + frecuencias[BITS_11];
+
+    //Calculamos el nuevo rango
+    for( register short i = 0; i <4 ; i++)
+    {
+        nuevoTecho = nuevoPiso + ( ( rango * frecuencias[i] ) / totalFrecuencias );
+
+        //Dejamos de comprimir en caso de encontrar el caracter a comprimir
+        if(bits == i) break;
+
+        nuevoPiso = nuevoTecho;
+    }
+
+    techo = nuevoTecho - 1;
+    piso = nuevoPiso;
+
+    //Una vez calculado el nuevo rango, debemos guardar los bits que converjan
+    guardarBitsComprimidos();
+
+    piso = piso;
+
+}
+
+/**
+//---------------------------------------------------------------------------&
+// P R I V A T E
+//---------------------------------------------------------------------------&
+*/
+//&---------------------------------------------------------------------------&
+//& guardarBitsComprimidos: Luego de comprimir el rango buscamos los bits que
+//&                         puedan ser almacenados en el archivo de salida
+//&---------------------------------------------------------------------------&
+void CompresorAritmetico::guardarBitsComprimidos()
+{
+    unsigned short MSB = 0x8000;
+
+
+    while( (techo & MSB) == (piso & MSB))
+    {
+        techo <<=1; techo |= 1;
+        piso <<=1;
+    }
 }

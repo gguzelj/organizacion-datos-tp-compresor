@@ -5,6 +5,7 @@
 #include "DMC.h"
 #include "Estado.h"
 #include "FileManager.h"
+#include "CompresorAritmetico.h"
 
 /**
 //---------------------------------------------------------------------------&
@@ -29,9 +30,10 @@ class Compresor
 //&---------------------------------------------------------------------------&
     private:
 
-        DMC                 *dmc;   //Contendra el modelo DMC
-        FileManagerInput    *input; //Referencia al archivo de entrada
-        FileManagerOutput   *output;//Referencia al archivo de salida
+        DMC                 *dmc;                //Contendra el modelo DMC
+        FileManagerInput    *input;              //Referencia al archivo de entrada
+        FileManagerOutput   *output;             //Referencia al archivo de salida
+        CompresorAritmetico *compresorAritmetico;//Referencia al compresor Aritmetico
 
 };
 #endif // COMPRESOR_H

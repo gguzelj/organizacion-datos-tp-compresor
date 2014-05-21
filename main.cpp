@@ -1,13 +1,5 @@
 #include "src/Compresor.h"
 
-#include <iostream>
-#include <stdio.h>
-#include <stdlib.h>
-#include <fstream>
-#include <stddef.h>
-#include <string>
-#include <bitset>
-
 int main(int argc, char* argv[])
 {
     Compresor *compresor = new Compresor();
