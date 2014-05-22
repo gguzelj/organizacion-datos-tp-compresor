@@ -20,7 +20,7 @@ class FileManager
     void close();
 
     protected:
-        std::fstream   file_;
+        std::fstream    file_;
         size_t          fileSize_;
         char*           buffer_;
         size_t          bufferSize_;
@@ -76,11 +76,13 @@ class FileManagerOutput : public FileManager {
         FileManagerOutput();
         virtual ~FileManagerOutput();
 
+        int open(const char *filename, std::ios::openmode mode);
         int escribirByte(Byte byte);
 
 //&---------------------------------------------------------------------------&
 //& P R I V A T E
 //&---------------------------------------------------------------------------&
     private:
+        std::ofstream   file_;
 };
 #endif // FILEMANAGER_H

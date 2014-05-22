@@ -2,6 +2,7 @@
 #define COMPRESORARITMETICO_H
 
 #include "utils/constantes.h"
+#include "FileManager.h"
 
 /**
 //---------------------------------------------------------------------------&
@@ -17,7 +18,7 @@ class CompresorAritmetico
 //&---------------------------------------------------------------------------&
     public:
 
-        CompresorAritmetico();
+        CompresorAritmetico(FileManagerOutput *outPut);
         virtual ~CompresorAritmetico();
 
         void comprimir(Direccion bits, int* frecuencias);
@@ -27,11 +28,17 @@ class CompresorAritmetico
 //&---------------------------------------------------------------------------&
     private:
 
-        unsigned short  piso;
-        unsigned short  techo;
-        unsigned char   underflow;
+        unsigned short      piso;
+        unsigned short      techo;
+        unsigned char       underflow;
+        FileManagerOutput   *output;
+        Byte                byteBuffer;
+        unsigned short      contadorBits;
 
-        void            guardarBitsComprimidos();
+
+        void                guardarBitsYValidarUnderflow();
+        void                guardarBit(const unsigned short bit);
+
 };
 
 #endif // COMPRESORARITMETICO_H

@@ -9,11 +9,13 @@
 //&---------------------------------------------------------------------------&
 //& CompresorAritmetico: Constructor
 //&---------------------------------------------------------------------------&
-CompresorAritmetico::CompresorAritmetico()
+CompresorAritmetico::CompresorAritmetico(FileManagerOutput *outPut)
 {
     piso = 0;
     techo = ~0;
     underflow = 0;
+    contadorBits = 0;
+    this->output = outPut;
 }
 
 //&---------------------------------------------------------------------------&
@@ -53,11 +55,17 @@ void CompresorAritmetico::comprimir(Direccion bits, int* frecuencias)
     techo = nuevoTecho - 1;
     piso = nuevoPiso;
 
+    /** EN UN MOMENTO TECHO Y PISO CONVERGEN DEMASIADO Y SE DEJA DE COMPRIMIR
+    ANALIZAR!
+    if( techo == 0x7fff && piso == 0x8000)
+    {
+        piso = 0;
+        techo = ~0;
+    }*/
+
+
     //Una vez calculado el nuevo rango, debemos guardar los bits que converjan
-    guardarBitsComprimidos();
-
-    piso = piso;
-
+    guardarBitsYValidarUnderflow();
 }
 
 /**
@@ -66,17 +74,73 @@ void CompresorAritmetico::comprimir(Direccion bits, int* frecuencias)
 //---------------------------------------------------------------------------&
 */
 //&---------------------------------------------------------------------------&
-//& guardarBitsComprimidos: Luego de comprimir el rango buscamos los bits que
-//&                         puedan ser almacenados en el archivo de salida
+//& guardarBitsYValidarUnderflow: Luego de comprimir el rango buscamos los bits
+//&                               que puedan ser almacenados en el archivo de
+//&                               salida
 //&---------------------------------------------------------------------------&
-void CompresorAritmetico::guardarBitsComprimidos()
+void CompresorAritmetico::guardarBitsYValidarUnderflow()
 {
-    unsigned short MSB = 0x8000;
+    const unsigned short MSB = 0x8000;
+    const unsigned short segundoMSB = 0x4000;
+    const unsigned short ultimosBits = 0x3FFF;
 
-
-    while( (techo & MSB) == (piso & MSB))
+    //Guardamos los bits que convergen
+    while(true)
     {
-        techo <<=1; techo |= 1;
-        piso <<=1;
+        //MSB techo == MSB piso ?
+        if((techo & MSB) == (piso & MSB))
+        {
+            //Output MSB piso
+            guardarBit(piso & MSB);
+
+            //Sacamos los bits en underflow
+            while(underflow)
+            {
+                //output ~MSB piso
+                guardarBit(~(piso & MSB));
+                underflow--;
+            }
+
+            //SHIFT
+            techo <<= 1; techo |= 1;
+            piso <<= 1;
+        }
+        else
+        {
+            //Validamos por Underflow
+            if( (piso & segundoMSB) & ~(techo & segundoMSB) )
+            {
+                //Eliminimo el segundoMSB, y corro todos los bits
+                piso = (piso & MSB) | ((piso & ultimosBits) << 1 );
+                techo = (techo & MSB) | ((techo & ultimosBits) << 1 );
+                techo |= 1;
+
+                //Incremento el contador de underflow
+                underflow++;
+            }
+            else
+            {
+                return;
+            }
+        }
+    }
+}
+
+//&---------------------------------------------------------------------------&
+//& guardarBit: Metodo encargado de agrupar bits en bytes, y guardarlos en el
+//&             archivo de salida
+//&---------------------------------------------------------------------------&
+void CompresorAritmetico::guardarBit(const unsigned short bit)
+{
+    contadorBits++;
+
+    //Almacenamos el nuevo bit en el byteBuffer
+    byteBuffer[8-contadorBits] = (bit)?1:0;
+
+    //En caso de completar un byte entero, lo guardamos en el archivo
+    if(contadorBits == 8)
+    {
+        contadorBits = 0;
+        output->escribirByte(byteBuffer);
     }
 }
