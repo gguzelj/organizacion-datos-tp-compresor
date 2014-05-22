@@ -35,5 +35,10 @@ class Compresor
         FileManagerOutput   *output;             //Referencia al archivo de salida
         CompresorAritmetico *compresorAritmetico;//Referencia al compresor Aritmetico
 
+
+        Byte                byteBuffer;
+
+        int                 abrirArchivos(char *filename);
+
 };
 #endif // COMPRESOR_H

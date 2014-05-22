@@ -214,6 +214,26 @@ FileManagerOutput::~FileManagerOutput()
 }
 
 //&---------------------------------------------------------------------------&
+//& open: Abrimos el archivo de salida
+//&---------------------------------------------------------------------------&
+int FileManagerOutput::open(const char *filename, std::ios::openmode mode)
+{
+    file_.open(filename, mode);
+
+    //Calculamos la cantidad de particiones que debemos hacer
+    if (file_.is_open())
+    {
+        bytesEmitidos_ = 0;
+        bitsEmitidos_ = 0;
+    }
+    else
+    {
+        return ERROR_APERTURA_ARCHIVO;
+    }
+    return 0;
+}
+
+//&---------------------------------------------------------------------------&
 //& EscribirBits:   Metodo encargado de escribir la cantidad de bits recibidada
 //&                 por parametro en el archivo de salida
 //&---------------------------------------------------------------------------&

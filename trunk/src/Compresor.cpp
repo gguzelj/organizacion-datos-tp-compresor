@@ -1,5 +1,9 @@
 #include "Compresor.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 using namespace std;
 
 /**
@@ -16,7 +20,7 @@ Compresor::Compresor()
     this->dmc                 = new DMC();
     this->input               = new FileManagerInput();
     this->output              = new FileManagerOutput();
-    this->compresorAritmetico = new CompresorAritmetico();
+    this->compresorAritmetico = new CompresorAritmetico( this->output );
 }
 
 //&---------------------------------------------------------------------------&
@@ -32,6 +36,9 @@ Compresor::~Compresor()
 
     output->~FileManagerOutput();
     delete output;
+
+    compresorAritmetico->~CompresorAritmetico();
+    delete compresorAritmetico;
 }
 
 //&---------------------------------------------------------------------------&
@@ -68,12 +75,9 @@ void Compresor::comprimir(char *filename)
 {
     Direccion bits;
 
-    //Abrimos el archivo
-    if(input->open(filename, ios::in|ios::binary|ios::ate) == ERROR_APERTURA_ARCHIVO)
-    {
-        cout << "ERROR: No se pudo abrir el archivo" << endl;
+    //Abrimos los archivos
+    if(abrirArchivos(filename))
         return;
-    }
 
     //Recorremos el archivo de a dos bits
     bits = input->leerDosBits();
@@ -88,59 +92,6 @@ void Compresor::comprimir(char *filename)
         //Leemos los proximos dos bits
         bits = input->leerDosBits();
     }
-
-/**
-    //EL SIGUIENTE CODIGO ES PARA EL FILEMANAGEROUTPUT. ASI SE GUARDAN BITS:
-
-    std::bitset<8> byte;
-    Direccion bits;
-    short cont = 7;
-    char e;
-
-    std::ofstream ArchivoFinal ("COPIA",std::ios::binary);
-
-    input->open(filename, ios::in|ios::binary|ios::ate);
-
-    bits = input->leerDosBits();
-    while(bits != ERROR_EOF)
-    {
-        if(cont == -1)
-        {
-            e = byte.to_ulong();
-            ArchivoFinal.write( &e, sizeof(e) ) ;
-            cont = 7;
-        }
-
-        switch( bits )
-        {
-            case BITS_00:
-                byte[cont] = 0;
-                byte[cont-1] = 0;
-                break;
-
-            case BITS_01:
-                byte[cont] = 0;
-                byte[cont-1] = 1;
-                break;
-
-            case BITS_10:
-                byte[cont] = 1;
-                byte[cont-1] = 0;
-                break;
-
-            case BITS_11:
-                byte[cont] = 1;
-                byte[cont-1] = 1;
-                break;
-        }
-
-        cont -= 2;
-
-        //Leemos los proximos dos bits
-        bits = input->leerDosBits();
-    }
-    ArchivoFinal.close();
-*/
 }
 
 /**
@@ -148,3 +99,27 @@ void Compresor::comprimir(char *filename)
 // P R I V A T E
 //---------------------------------------------------------------------------&
 */
+//&---------------------------------------------------------------------------&
+//& abrirArchivos:  Abrimos los archivos para trabajar
+//&---------------------------------------------------------------------------&
+int Compresor::abrirArchivos(char *filename)
+{
+    const char* NUMERO_GRUPO = ".13";
+    char* filenameOut = (char*) malloc(strlen(filename)+strlen(NUMERO_GRUPO)+1);
+    int resultado = 0;
+
+    //Armamos el nombre del archivo de salida
+    strcpy(filenameOut, filename);
+    strcat(filenameOut, NUMERO_GRUPO);
+
+    //Abrimos el archivo
+    resultado = input->open(filename, ios::in|ios::binary|ios::ate);
+    resultado = output->open(filenameOut,std::ios::binary);
+
+    if(resultado == ERROR_APERTURA_ARCHIVO)
+        cout << "Error al tratar de abrir los archivos"<<endl;
+
+    //Liberamos variables
+    free(filenameOut);
+    return resultado;
+}

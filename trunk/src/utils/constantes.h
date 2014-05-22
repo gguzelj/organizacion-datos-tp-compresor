@@ -1,9 +1,11 @@
 #ifndef CONSTANTES_H_INCLUDED
 #define CONSTANTES_H_INCLUDED
 
-#include <bitset>
-#include <fstream>
+#include <stdlib.h>
+#include <stdio.h>
 #include <iostream>
+#include <fstream>
+#include <bitset>
 #include <list>
 #include <string>
 
@@ -25,7 +27,6 @@ const Direccion BITS_00                 = 0;
 const Direccion BITS_01                 = 1;
 const Direccion BITS_10                 = 2;
 const Direccion BITS_11                 = 3;
-
 
 const int MIN_CNT1                      = 1000;
 const int MIN_CNT2                      = 500;
