@@ -64,7 +64,7 @@ void Compresor::ejecutar(int argc, char** argv)
 
     //Validamos si tenemos que descomprimir
     if( modoDescomprimir.compare(modo) == 0)
-        this->comprimir(filename); //this->descomprimir(filename);
+        this->descomprimir(filename); //this->descomprimir(filename);
 
 }
 
@@ -76,7 +76,7 @@ void Compresor::comprimir(char *filename)
     Direccion bits;
 
     //Abrimos los archivos
-    if(abrirArchivos(filename))
+    if(abrirArchivosComprimir(filename))
         return;
 
     //Recorremos el archivo de a dos bits
@@ -94,32 +94,89 @@ void Compresor::comprimir(char *filename)
     }
 }
 
+//&---------------------------------------------------------------------------&
+//& Descomprimir: Procedemos a descomprimir el archivo
+//&---------------------------------------------------------------------------&
+void Compresor::descomprimir(char *filename)
+{
+    //Abrimos los archivos
+    if(abrirArchivosDescomprimir(filename))
+        return;
+}
 /**
 //---------------------------------------------------------------------------&
 // P R I V A T E
 //---------------------------------------------------------------------------&
 */
+
 //&---------------------------------------------------------------------------&
-//& abrirArchivos:  Abrimos los archivos para trabajar
+//& abrirArchivosComprimir: Abrimos los archivos para trabajar en la
+//&                         compresion
 //&---------------------------------------------------------------------------&
-int Compresor::abrirArchivos(char *filename)
+int Compresor::abrirArchivosComprimir(char *filename)
 {
     const char* NUMERO_GRUPO = ".13";
     char* filenameOut = (char*) malloc(strlen(filename)+strlen(NUMERO_GRUPO)+1);
-    int resultado = 0;
 
     //Armamos el nombre del archivo de salida
     strcpy(filenameOut, filename);
     strcat(filenameOut, NUMERO_GRUPO);
 
-    //Abrimos el archivo
-    resultado = input->open(filename, ios::in|ios::binary|ios::ate);
-    resultado = output->open(filenameOut,std::ios::binary);
+    //Abrimos el archivo a comprimir
+    if( input->open(filename, ios::in|ios::binary|ios::ate) == ERROR_APERTURA_ARCHIVO )
+    {
+        cout << "ERROR: No se pudo abrir el archivo para comprimir"<<endl;
+        free(filenameOut);
+        return ERROR_APERTURA_ARCHIVO;
+    }
 
-    if(resultado == ERROR_APERTURA_ARCHIVO)
-        cout << "Error al tratar de abrir los archivos"<<endl;
+    //Abrimos el archivo de salida
+    if(output->open(filenameOut,std::ios::binary))
+    {
+        cout << "ERROR: No se pudo abrir el archivo de salida"<<endl;
+        free(filenameOut);
+        return ERROR_APERTURA_ARCHIVO;
+    }
 
     //Liberamos variables
     free(filenameOut);
-    return resultado;
+    return 0;
+}
+
+//&---------------------------------------------------------------------------&
+//& abrirArchivosDescomprimir:  Abrimos los archivos para trabajar en la
+//&                             Descompresion
+//&---------------------------------------------------------------------------&
+int Compresor::abrirArchivosDescomprimir(char *filename)
+{
+    const char* NUMERO_GRUPO = ".13";
+    const char nombreValido = strstr(filename, NUMERO_GRUPO) != NULL;
+
+    if(!nombreValido)
+    {
+        cout << "ERROR: Formato de archivo imposible de descomprimir"<<endl;
+        return ERROR_APERTURA_ARCHIVO;
+    }
+
+    char *filenameOut = NULL; //CARGAR CON EL NOMBRE DEL ARCHIVO NUEVO
+
+    //Abrimos el archivo a comprimir
+    if( input->open(filename, ios::in|ios::binary|ios::ate) == ERROR_APERTURA_ARCHIVO )
+    {
+        cout << "ERROR: No se pudo abrir el archivo para comprimir"<<endl;
+        free(filenameOut);
+        return ERROR_APERTURA_ARCHIVO;
+    }
+
+    //Abrimos el archivo de salida
+    if(output->open(filenameOut,std::ios::binary))
+    {
+        cout << "ERROR: No se pudo abrir el archivo de salida"<<endl;
+        free(filenameOut);
+        return ERROR_APERTURA_ARCHIVO;
+    }
+
+    //Liberamos variables
+    free(filenameOut);
+    return 0;
 }

@@ -28,16 +28,17 @@ class CompresorAritmetico
 //&---------------------------------------------------------------------------&
     private:
 
-        unsigned short      piso;
-        unsigned short      techo;
-        unsigned char       underflow;
-        FileManagerOutput   *output;
-        Byte                byteBuffer;
-        unsigned short      contadorBits;
+        unsigned short          piso;
+        unsigned short          techo;
+        unsigned short          medio;
+        unsigned char           underflow;
+        FileManagerOutput       *output;
+        Byte                    byteBuffer;
+        unsigned short          contadorBits;
 
 
-        void                guardarBitsYValidarUnderflow();
-        void                guardarBit(const unsigned short bit);
+        void                    guardarBitsYValidarUnderflow();
+        void                    guardarBit(const unsigned short bit);
 
 };
 

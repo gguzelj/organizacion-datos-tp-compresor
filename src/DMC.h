@@ -39,6 +39,7 @@ class DMC
         void crearArbolInicial();
         bool hayQueClonar(Direccion direccion);
         void clonarEstado(Direccion direccion);
+        void verificarFrecuenciasDelEstado();
 
 };
 #endif // DMC_H

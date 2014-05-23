@@ -24,6 +24,7 @@ class Compresor
 
         void ejecutar(int argc, char** argv);
         void comprimir(char *filename);
+        void descomprimir(char *filename);
 
 //&---------------------------------------------------------------------------&
 //& P R I V A T E
@@ -38,7 +39,8 @@ class Compresor
 
         Byte                byteBuffer;
 
-        int                 abrirArchivos(char *filename);
+        int                 abrirArchivosComprimir(char *filename);
+        int                 abrirArchivosDescomprimir(char *filename);
 
 };
 #endif // COMPRESOR_H

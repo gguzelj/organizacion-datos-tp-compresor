@@ -62,8 +62,11 @@ void DMC::actualizarModelo(Direccion direccion)
     //Aumentamos la frecuencia en la direccion dada
     estadoActual->frecuencias[direccion] += 1;
 
+    //Verificar frecuencias del estado
+    verificarFrecuenciasDelEstado();
+
     //Controlamos la cantidad de estados creados
-    if(cantidadEstadosCreados > LIMITE_ESTADOS)
+    if(cantidadEstadosCreados > LIMITE_ESTADOS )
         {
             this->~DMC();
             crearArbolInicial();
@@ -190,8 +193,40 @@ void DMC::clonarEstado(Direccion direccion)
         //Distribuimos las frecuencias
         nvoEst->frecuencias[dir] = ratio*sigEst->frecuencias[dir];
         sigEst->frecuencias[dir] = sigEst->frecuencias[dir] - nvoEst->frecuencias[dir];
+
+        //Nos aseguramos que ninguna frecuencia quede en 0
+        if(nvoEst->frecuencias[dir] == 0) nvoEst->frecuencias[dir] = 1;
+        if(sigEst->frecuencias[dir] == 0) sigEst->frecuencias[dir] = 1;
     }
 
     //Movemos al estado actual
     estadoActual = nvoEst;
+}
+
+//&---------------------------------------------------------------------------&
+//& verificarFrecuenciasDelEstado:  Validamos que el total de frecuencias no
+//&                                 supere el maximo previsto
+//&---------------------------------------------------------------------------&
+void DMC::verificarFrecuenciasDelEstado()
+{
+    unsigned short total_frecuencias = 0;
+
+    /** Es importante para el compresor aritmetico que el total de las frecuencias
+    *   No sea mayor al limite establecido. De lo contrario, se necesitaria
+    *   mas de 16bits para los calculos
+    */
+
+    //Calculamos el total de las frecuencias del estado
+    for( register short dir = 0; dir <4 ; dir++)
+        total_frecuencias += estadoActual->frecuencias[dir];
+
+    //Si no se supera al total, volvemos
+    if(total_frecuencias < LIMITE_FRECUENCIAS) return;
+
+    //Si se supera al total => Reducimos a la mitad cada estado
+    for( register short dir = 0; dir <4 ; dir++)
+    {
+        estadoActual->frecuencias[dir] /= 2;
+        if(estadoActual->frecuencias[dir] == 0) estadoActual->frecuencias[dir] = 1;
+    }
 }

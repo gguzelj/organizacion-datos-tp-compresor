@@ -29,9 +29,11 @@ const Direccion BITS_10                 = 2;
 const Direccion BITS_11                 = 3;
 
 const int MIN_CNT1                      = 1000;
-const int MIN_CNT2                      = 500;
+const int MIN_CNT2                      = 745;
 
-const unsigned long LIMITE_ESTADOS      = 50000;
+const unsigned long LIMITE_ESTADOS      = 50000000;
+const unsigned short LIMITE_FRECUENCIAS = 16383;    //Maximo para las frecuencias acumuladas
+                                                    //2^14 - 1
 
 /*  Constantes para los archivos    */
 const unsigned int TAMANO_MAX_BUFFER    = 10485760; //10Mb
