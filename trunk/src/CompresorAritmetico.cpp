@@ -32,37 +32,16 @@ CompresorAritmetico::~CompresorAritmetico()
 //&---------------------------------------------------------------------------&
 void CompresorAritmetico::comprimir(Direccion bits, int* frecuencias)
 {
-    unsigned short nuevoTecho = techo;
-    unsigned short nuevoPiso = piso;
     unsigned long rango = techo - piso + 1;
-    unsigned long totalFrecuencias = 0;
+    Frecuencias   frecAcumuladas = {0,0,0,0};
 
-    //Sumamos el total de todas las posibilidades
-    totalFrecuencias += frecuencias[BITS_00] + frecuencias[BITS_01];
-    totalFrecuencias += frecuencias[BITS_10] + frecuencias[BITS_11];
+    //Calculamos las frecuencias acumuladas para este estado
+    for( register short dir = 0; dir <4 ; dir++)
+        frecAcumuladas[dir] = frecuencias[dir] + frecAcumuladas[((dir - 1)<0)?0:(dir-1)] ;
 
-    //Calculamos el nuevo rango
-    for( register short i = 0; i <4 ; i++)
-    {
-        nuevoTecho = nuevoPiso + ( ( rango * frecuencias[i] ) / totalFrecuencias );
-
-        //Dejamos de comprimir en caso de encontrar el caracter a comprimir
-        if(bits == i) break;
-
-        nuevoPiso = nuevoTecho;
-    }
-
-    techo = nuevoTecho - 1;
-    piso = nuevoPiso;
-
-    /** EN UN MOMENTO TECHO Y PISO CONVERGEN DEMASIADO Y SE DEJA DE COMPRIMIR
-    ANALIZAR!
-    if( techo == 0x7fff && piso == 0x8000)
-    {
-        piso = 0;
-        techo = ~0;
-    }*/
-
+    //Calculamos el nuevo rango (frecAcumuladas[3] = Total Acumulado)
+    techo = piso + rango * frecAcumuladas[bits] / frecAcumuladas[3] - 1;
+    piso = piso + rango * ((bits-1 < 0)?0:(frecAcumuladas[bits-1])) / frecAcumuladas[3];
 
     //Una vez calculado el nuevo rango, debemos guardar los bits que converjan
     guardarBitsYValidarUnderflow();
@@ -84,45 +63,43 @@ void CompresorAritmetico::guardarBitsYValidarUnderflow()
     const unsigned short segundoMSB = 0x4000;
     const unsigned short ultimosBits = 0x3FFF;
 
-    //Guardamos los bits que convergen
-    while(true)
+    for (;;)
     {
-        //MSB techo == MSB piso ?
-        if((techo & MSB) == (piso & MSB))
+        //Validamos underflow
+        if ( ( (techo & MSB) != (piso & MSB) ) &&
+             ( (piso & segundoMSB) && !(techo & segundoMSB) ) )
         {
-            //Output MSB piso
+            //Eliminimo el segundoMSB, y corro todos los bits
+            piso = (piso & MSB) | ((piso & ultimosBits) << 1 );
+            techo = (techo & MSB) | ((techo & ultimosBits) << 1 );
+            techo |= 1;
+
+            //Incremento el contador de underflow
+            underflow++;
+        }
+
+        //Los MSB coinciden, entonces los guardamos en el archivo/
+        if ((techo & MSB) == (piso & MSB))
+        {
             guardarBit(piso & MSB);
 
-            //Sacamos los bits en underflow
-            while(underflow)
+            //Sacamos los bits en underflow/
+            while (underflow > 0)
             {
-                //output ~MSB piso
-                guardarBit(~(piso & MSB));
+                guardarBit((techo & MSB) == 0);
                 underflow--;
             }
-
-            //SHIFT
-            techo <<= 1; techo |= 1;
-            piso <<= 1;
         }
         else
         {
-            //Validamos por Underflow
-            if( (piso & segundoMSB) & ~(techo & segundoMSB) )
-            {
-                //Eliminimo el segundoMSB, y corro todos los bits
-                piso = (piso & MSB) | ((piso & ultimosBits) << 1 );
-                techo = (techo & MSB) | ((techo & ultimosBits) << 1 );
-                techo |= 1;
-
-                //Incremento el contador de underflow
-                underflow++;
-            }
-            else
-            {
-                return;
-            }
+            //Salimo jugando...
+            return;
         }
+
+        //Shift de variables/
+        piso <<= 1;
+        techo <<= 1;
+        techo |= 1;
     }
 }
 
