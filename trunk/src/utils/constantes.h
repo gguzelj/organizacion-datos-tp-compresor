@@ -3,11 +3,15 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <inttypes.h>
 #include <iostream>
 #include <fstream>
 #include <bitset>
 #include <list>
 #include <string>
+#include <queue>
+
 
 /**
 //---------------------------------------------------------------------------&
@@ -31,7 +35,7 @@ const Direccion BITS_11                 = 3;
 const int MIN_CNT1                      = 1000;
 const int MIN_CNT2                      = 745;
 
-const unsigned long LIMITE_ESTADOS      = 50000000;
+const unsigned long LIMITE_ESTADOS      = 500000000;
 const unsigned short LIMITE_FRECUENCIAS = 16383;    //Maximo para las frecuencias acumuladas
                                                     //2^14 - 1
 

@@ -17,10 +17,10 @@ using namespace std;
 //&---------------------------------------------------------------------------&
 Compresor::Compresor()
 {
-    this->dmc                 = new DMC();
-    this->input               = new FileManagerInput();
-    this->output              = new FileManagerOutput();
-    this->compresorAritmetico = new CompresorAritmetico( this->output );
+    this->dmc_                 = new DMC();
+    this->input_               = new FileManagerInput();
+    this->output_              = new FileManagerOutput();
+    this->compresorAritmetico_ = new CompresorAritmetico( this->input_ , this->output_ );
 }
 
 //&---------------------------------------------------------------------------&
@@ -28,17 +28,17 @@ Compresor::Compresor()
 //&---------------------------------------------------------------------------&
 Compresor::~Compresor()
 {
-    dmc->~DMC();
-    delete dmc;
+    dmc_->~DMC();
+    delete dmc_;
 
-    input->~FileManagerInput();
-    delete input;
+    input_->~FileManagerInput();
+    delete input_;
 
-    output->~FileManagerOutput();
-    delete output;
+    output_->~FileManagerOutput();
+    delete output_;
 
-    compresorAritmetico->~CompresorAritmetico();
-    delete compresorAritmetico;
+    compresorAritmetico_->~CompresorAritmetico();
+    delete compresorAritmetico_;
 }
 
 //&---------------------------------------------------------------------------&
@@ -64,7 +64,7 @@ void Compresor::ejecutar(int argc, char** argv)
 
     //Validamos si tenemos que descomprimir
     if( modoDescomprimir.compare(modo) == 0)
-        this->descomprimir(filename); //this->descomprimir(filename);
+        this->descomprimir(filename);
 
 }
 
@@ -80,18 +80,21 @@ void Compresor::comprimir(char *filename)
         return;
 
     //Recorremos el archivo de a dos bits
-    bits = input->leerDosBits();
+    bits = input_->leerDosBits();
     while(bits != ERROR_EOF)
     {
         //Comprimimos
-        compresorAritmetico->comprimir(bits,dmc->getFrecuencias());
+        compresorAritmetico_->comprimir(bits,dmc_->getFrecuencias());
 
         //Actualizamos el modelo DMC
-        dmc->actualizarModelo(bits);
+        dmc_->actualizarModelo(bits);
 
         //Leemos los proximos dos bits
-        bits = input->leerDosBits();
+        bits = input_->leerDosBits();
     }
+
+    //Guardamos la cantidad total de bytes procesados
+    output_->escribirTamanioArchivo( input_->getCantidadBytesProcesados() );
 }
 
 //&---------------------------------------------------------------------------&
@@ -99,9 +102,28 @@ void Compresor::comprimir(char *filename)
 //&---------------------------------------------------------------------------&
 void Compresor::descomprimir(char *filename)
 {
+    Direccion       bits;
+    uint64_t        cantidadBytesDescomprimidos = 0;
+
     //Abrimos los archivos
     if(abrirArchivosDescomprimir(filename))
         return;
+
+    //Preparar compresor para descomprimir
+    compresorAritmetico_->prepararDescompresor();
+
+    //Comenzamos a descomprimir
+    while(cantidadBytesDescomprimidos < totalBytesArchivo_)
+    {
+        //Descomprimimos los bits del archivo
+        bits = compresorAritmetico_->descomprimir(dmc_->getFrecuencias());
+
+        //Actualizamos el modelo DMC
+        dmc_->actualizarModelo(bits);
+
+        //Guardamos los dos bits
+        //output_->guardarBits(bits);
+    }
 }
 /**
 //---------------------------------------------------------------------------&
@@ -123,23 +145,27 @@ int Compresor::abrirArchivosComprimir(char *filename)
     strcat(filenameOut, NUMERO_GRUPO);
 
     //Abrimos el archivo a comprimir
-    if( input->open(filename, ios::in|ios::binary|ios::ate) == ERROR_APERTURA_ARCHIVO )
+    if( input_->open(filename, ios::in|ios::binary|ios::ate) == ERROR_APERTURA_ARCHIVO )
     {
         cout << "ERROR: No se pudo abrir el archivo para comprimir"<<endl;
-        free(filenameOut);
+        delete filenameOut;
         return ERROR_APERTURA_ARCHIVO;
     }
 
     //Abrimos el archivo de salida
-    if(output->open(filenameOut,std::ios::binary))
+    if(output_->open(filenameOut,std::ios::binary))
     {
         cout << "ERROR: No se pudo abrir el archivo de salida"<<endl;
-        free(filenameOut);
+        delete filenameOut;
         return ERROR_APERTURA_ARCHIVO;
     }
 
+    //En caso de poder abrir el archivo de salida, reservamos los primeros 8 bytes
+    //para guardar la cantidad de bytes que procesa el compresor
+    output_->reservarEspacioTamanio();
+
     //Liberamos variables
-    free(filenameOut);
+    delete filenameOut;
     return 0;
 }
 
@@ -158,25 +184,31 @@ int Compresor::abrirArchivosDescomprimir(char *filename)
         return ERROR_APERTURA_ARCHIVO;
     }
 
-    char *filenameOut = NULL; //CARGAR CON EL NOMBRE DEL ARCHIVO NUEVO
+    //Creamos el nombre para el archivo de salida
+    char* filenameOut = (char*) malloc(strlen(filename) - 3);
+    strncpy(filenameOut, filename, strlen(filename)-3);
+    filenameOut[strlen(filename) - 3] = '\0';
 
     //Abrimos el archivo a comprimir
-    if( input->open(filename, ios::in|ios::binary|ios::ate) == ERROR_APERTURA_ARCHIVO )
+    if( input_->open(filename, ios::in|ios::binary|ios::ate) == ERROR_APERTURA_ARCHIVO )
     {
         cout << "ERROR: No se pudo abrir el archivo para comprimir"<<endl;
-        free(filenameOut);
+        delete filenameOut;
         return ERROR_APERTURA_ARCHIVO;
     }
 
     //Abrimos el archivo de salida
-    if(output->open(filenameOut,std::ios::binary))
+    if(output_->open(filenameOut,std::ios::binary))
     {
         cout << "ERROR: No se pudo abrir el archivo de salida"<<endl;
-        free(filenameOut);
+        delete filenameOut;
         return ERROR_APERTURA_ARCHIVO;
     }
 
+    //Leemos la cantidad de bytes del archivo original
+    totalBytesArchivo_ = input_->getTamanioArchivoOriginal();
+
     //Liberamos variables
-    free(filenameOut);
+    delete filenameOut;
     return 0;
 }

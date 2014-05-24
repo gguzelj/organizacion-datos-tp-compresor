@@ -1,4 +1,5 @@
 #include "FileManager.h"
+
 /**
 //---------------------------------------------------------------------------&
 // Clase:       FileManager
@@ -40,6 +41,7 @@ int FileManager::open(const char *filename, std::ios::openmode mode)
         cantPartes_ = 1 + (fileSize_ / TAMANO_MAX_BUFFER);
         filePos_ = 0;
         bytesEmitidos_ = 0;
+        totalBytesArchivo_ = 0;
         bitsEmitidos_ = 0;
         bufferVacio_ = true;
         ultimoBloque_ = false;
@@ -128,6 +130,7 @@ Direccion FileManagerInput::leerDosBits()
     {
         bitsEmitidos_ = 0;
         bytesEmitidos_++;
+        totalBytesArchivo_++;
     }
 
     //En caso de haber leido todo el buffer, seteamos el flag para indicar
@@ -137,6 +140,86 @@ Direccion FileManagerInput::leerDosBits()
 
     return dir;
 }
+
+//&---------------------------------------------------------------------------&
+//& getCantidadBytesProcesados: Devolvemos la cantidad de bytes procesados
+//&---------------------------------------------------------------------------&
+uint64_t FileManagerInput::getCantidadBytesProcesados()
+{
+    return totalBytesArchivo_;
+}
+
+//&---------------------------------------------------------------------------&
+//& getTamanioArchivoOriginal:  Devolvemos el tamanio del archivo original
+//&---------------------------------------------------------------------------&
+uint64_t FileManagerInput::getTamanioArchivoOriginal()
+{
+    char* tamanio = (char*)malloc(sizeof(uint64_t));
+    uint64_t totalBytes = 0;
+
+    //Leemos la cantidad de bytes del archivo original
+    file_.seekg(0, file_.beg);
+    file_.read(tamanio, sizeof(uint64_t));
+
+    strncpy((char*)&totalBytes, tamanio, 8);
+
+    return totalBytes;
+}
+
+//&---------------------------------------------------------------------------&
+//& leerBits:  Leemos una determinada cantidad de bits del archivo
+//&---------------------------------------------------------------------------&
+std::list<Byte> FileManagerInput::leerBits(int cantidadBits)
+{
+    std::list<Byte> listaBytes;
+    Byte            byte;
+    unsigned short  contadorBits = 0;
+
+    while(cantidadBits > 0)
+    {
+        //Controlamos si debemos hacer un read al archivo para completar el buffer con datos
+        if(bufferVacio_)
+        {
+            bufferVacio_ = false;
+            bytesEmitidos_ = 0;
+            if(this->read() == ERROR_EOF)
+                return listaBytes;
+        }
+
+        //Almacenamos el nuevo bit del archivo
+        byte[contadorBits] = (buffer_[bytesEmitidos_] & 0xC0)?1:0;
+
+        contadorBits++;
+
+        //En caso de completar un byte entero, lo guardamos en la lista
+        if(contadorBits == 8)
+        {
+            contadorBits = 0;
+            listaBytes.push_back(byte);
+        }
+
+        //Hacemos un shitf logico del buffer
+        buffer_[bytesEmitidos_] <<= 1;
+
+        //Actualizamos contadores del fileManager
+        bitsEmitidos_ ++;
+
+        if(bitsEmitidos_ == 8)
+        {
+            bitsEmitidos_ = 0;
+            bytesEmitidos_++;
+        }
+
+        //En caso de haber leido todo el buffer, seteamos el flag para indicar
+        //que necesitamos leer una nueva parte del archivo
+        if(bytesEmitidos_ == bufferSize_)
+            bufferVacio_ = true;
+
+        cantidadBits--;
+    }
+    return listaBytes;
+}
+
 
 /**
 //---------------------------------------------------------------------------&
@@ -244,6 +327,42 @@ int FileManagerOutput::escribirByte(Byte byte)
 
     char charByte = byte.to_ulong();
     file_.write( &charByte, sizeof(charByte));
+
+    return 0;
+}
+
+//&---------------------------------------------------------------------------&
+//& escribirTamanioArchivo: Escribimos en el archivo de salida la cantidad de
+//&                         bytes que tiene el archivo original.
+//&                         Esto se hace como alternativa al EOF, ya que si se
+//&                         utiliza este caracter especial, se reduce mucho el
+//&                         nivel de compresion
+//&---------------------------------------------------------------------------&
+int FileManagerOutput::escribirTamanioArchivo(uint64_t tamanio)
+{
+    if(!file_.is_open())
+        return ERROR_ARCHIVO_CERRADO;
+
+    //Guardamos el tamanio del archivo
+    file_.seekp(0L);
+    file_.write(reinterpret_cast<const char*>(&tamanio), sizeof(tamanio));
+
+    return 0;
+}
+
+//&---------------------------------------------------------------------------&
+//& reservarEspacioTamanio: Reservamos los 8 bytes necesarios para guardar la
+//&                         cantidad de bytes que contiene el archivo original
+//&---------------------------------------------------------------------------&
+int FileManagerOutput::reservarEspacioTamanio()
+{
+    if(!file_.is_open())
+        return ERROR_ARCHIVO_CERRADO;
+
+    uint64_t unsigned64BitNumber = 0;
+
+    //Escribimos 8 bytes al inicio del archivo
+    file_.write((const char*) (&unsigned64BitNumber), sizeof(uint64_t));
 
     return 0;
 }

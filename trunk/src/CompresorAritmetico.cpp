@@ -9,13 +9,14 @@
 //&---------------------------------------------------------------------------&
 //& CompresorAritmetico: Constructor
 //&---------------------------------------------------------------------------&
-CompresorAritmetico::CompresorAritmetico(FileManagerOutput *outPut)
+CompresorAritmetico::CompresorAritmetico(FileManagerInput *inPut, FileManagerOutput *outPut)
 {
     piso = 0;
     techo = ~0;
     underflow = 0;
     contadorBits = 0;
     this->output = outPut;
+    this->input = inPut;
 }
 
 //&---------------------------------------------------------------------------&
@@ -47,6 +48,49 @@ void CompresorAritmetico::comprimir(Direccion bits, int* frecuencias)
     guardarBitsYValidarUnderflow();
 }
 
+//&---------------------------------------------------------------------------&
+//& descomprimir:  Descomprimimos el archivo
+//&             http://www.arturocampos.com/ac_arithmetic.html
+//&---------------------------------------------------------------------------&
+Direccion CompresorAritmetico::descomprimir(int* frecuencias)
+{
+    Direccion       bits;
+    unsigned long   temp;
+    unsigned long   rango = techo - piso + 1;
+    Frecuencias     frecAcumuladas = {0,0,0,0};
+
+    //Calculamos las frecuencias acumuladas para este estado
+    for( register short dir = 0; dir <4 ; dir++)
+        frecAcumuladas[dir] = frecuencias[dir] + frecAcumuladas[((dir - 1)<0)?0:(dir-1)];
+
+
+    //Deshacemos los calculos del nuevo rango
+    temp = ( ( (valor - piso) + 1) * frecAcumuladas[3] - 1 ) / rango;
+
+    //Vemos en que intervalo cae el valor calculado
+    for(bits = BITS_00 ; (unsigned long)frecAcumuladas[bits] > temp; bits++);
+
+    //Actualizamos los valores de los intervalos
+    techo = piso + rango * frecAcumuladas[bits] / frecAcumuladas[3] - 1;
+    piso = piso + rango * ((bits-1 < 0)?0:(frecAcumuladas[bits-1])) / frecAcumuladas[3];
+
+    //Una vez calculado el nuevo rango, debemos guardar los bits que converjan
+    guardarBitsYValidarUnderflow();
+
+    return bits;
+}
+
+//&---------------------------------------------------------------------------&
+//& prepararDescompresor:   Preparamos el descompresor aritmetico
+//&---------------------------------------------------------------------------&
+void CompresorAritmetico::prepararDescompresor()
+{
+    //Debemos completar el principio del archivo para comenzar la descompresion
+    //input->leerBytes(*valor,);
+
+    return;
+}
+
 /**
 //---------------------------------------------------------------------------&
 // P R I V A T E
@@ -76,6 +120,7 @@ void CompresorAritmetico::guardarBitsYValidarUnderflow()
 
             //Incremento el contador de underflow
             underflow++;
+            continue;
         }
 
         //Los MSB coinciden, entonces los guardamos en el archivo/
