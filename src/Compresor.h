@@ -31,13 +31,13 @@ class Compresor
 //&---------------------------------------------------------------------------&
     private:
 
-        DMC                 *dmc;                //Contendra el modelo DMC
-        FileManagerInput    *input;              //Referencia al archivo de entrada
-        FileManagerOutput   *output;             //Referencia al archivo de salida
-        CompresorAritmetico *compresorAritmetico;//Referencia al compresor Aritmetico
+        DMC                 *dmc_;                //Contendra el modelo DMC
+        FileManagerInput    *input_;              //Referencia al archivo de entrada
+        FileManagerOutput   *output_;             //Referencia al archivo de salida
+        CompresorAritmetico *compresorAritmetico_;//Referencia al compresor Aritmetico
+        uint64_t            totalBytesArchivo_;
 
-
-        Byte                byteBuffer;
+        Byte                byteBuffer_;
 
         int                 abrirArchivosComprimir(char *filename);
         int                 abrirArchivosDescomprimir(char *filename);

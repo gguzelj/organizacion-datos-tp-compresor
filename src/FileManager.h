@@ -28,6 +28,7 @@ class FileManager
         std::streampos  filePos_;
         unsigned short  bitsEmitidos_;
         unsigned long   bytesEmitidos_;
+        uint64_t        totalBytesArchivo_;
         bool            bufferVacio_;
         bool            ultimoBloque_;
 };
@@ -48,7 +49,10 @@ class FileManagerInput : public FileManager
         FileManagerInput();
         virtual ~FileManagerInput();
 
-        Direccion leerDosBits();
+        Direccion       leerDosBits();
+        std::list<Byte> leerBits(int cantidadBits);
+        uint64_t        getCantidadBytesProcesados();
+        uint64_t        getTamanioArchivoOriginal();
 
 //&---------------------------------------------------------------------------&
 //& P R I V A T E
@@ -57,8 +61,6 @@ class FileManagerInput : public FileManager
 
         int read();
 };
-
-
 
 /**
 //---------------------------------------------------------------------------&
@@ -78,6 +80,8 @@ class FileManagerOutput : public FileManager {
 
         int open(const char *filename, std::ios::openmode mode);
         int escribirByte(Byte byte);
+        int escribirTamanioArchivo(uint64_t tamanio);
+        int reservarEspacioTamanio();
 
 //&---------------------------------------------------------------------------&
 //& P R I V A T E
