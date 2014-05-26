@@ -167,15 +167,15 @@ uint64_t FileManagerInput::getTamanioArchivoOriginal()
 }
 
 //&---------------------------------------------------------------------------&
-//& leerBits:  Leemos una determinada cantidad de bits del archivo
+//& leerBits:   Leemos una determinada cantidad de bits del archivo.
+//&             Se pueden leer hasta 1byte
 //&---------------------------------------------------------------------------&
-std::list<Byte> FileManagerInput::leerBits(int cantidadBits)
+unsigned char FileManagerInput::leerBits(int cantidadBits)
 {
-    std::list<Byte> listaBytes;
-    Byte            byte;
-    unsigned short  contadorBits = 0;
+    unsigned char   byte;
+    unsigned short  shift = 8 - cantidadBits;
 
-    while(cantidadBits > 0)
+    while(cantidadBits)
     {
         //Controlamos si debemos hacer un read al archivo para completar el buffer con datos
         if(bufferVacio_)
@@ -183,20 +183,11 @@ std::list<Byte> FileManagerInput::leerBits(int cantidadBits)
             bufferVacio_ = false;
             bytesEmitidos_ = 0;
             if(this->read() == ERROR_EOF)
-                return listaBytes;
+                return byte;
         }
 
         //Almacenamos el nuevo bit del archivo
-        byte[contadorBits] = (buffer_[bytesEmitidos_] & 0xC0)?1:0;
-
-        contadorBits++;
-
-        //En caso de completar un byte entero, lo guardamos en la lista
-        if(contadorBits == 8)
-        {
-            contadorBits = 0;
-            listaBytes.push_back(byte);
-        }
+        byte <<= 1; byte |=  (buffer_[bytesEmitidos_] & 0x80)?1:0;
 
         //Hacemos un shitf logico del buffer
         buffer_[bytesEmitidos_] <<= 1;
@@ -217,7 +208,10 @@ std::list<Byte> FileManagerInput::leerBits(int cantidadBits)
 
         cantidadBits--;
     }
-    return listaBytes;
+
+    byte <<= shift;
+
+    return byte;
 }
 
 

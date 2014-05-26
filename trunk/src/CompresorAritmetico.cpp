@@ -13,6 +13,7 @@ CompresorAritmetico::CompresorAritmetico(FileManagerInput *inPut, FileManagerOut
 {
     piso = 0;
     techo = ~0;
+    valor = 0;
     underflow = 0;
     contadorBits = 0;
     this->output = outPut;
@@ -63,7 +64,6 @@ Direccion CompresorAritmetico::descomprimir(int* frecuencias)
     for( register short dir = 0; dir <4 ; dir++)
         frecAcumuladas[dir] = frecuencias[dir] + frecAcumuladas[((dir - 1)<0)?0:(dir-1)];
 
-
     //Deshacemos los calculos del nuevo rango
     temp = ( ( (valor - piso) + 1) * frecAcumuladas[3] - 1 ) / rango;
 
@@ -75,7 +75,7 @@ Direccion CompresorAritmetico::descomprimir(int* frecuencias)
     piso = piso + rango * ((bits-1 < 0)?0:(frecAcumuladas[bits-1])) / frecAcumuladas[3];
 
     //Una vez calculado el nuevo rango, debemos guardar los bits que converjan
-    guardarBitsYValidarUnderflow();
+    shiftYValidarUnderflow();
 
     return bits;
 }
@@ -85,8 +85,14 @@ Direccion CompresorAritmetico::descomprimir(int* frecuencias)
 //&---------------------------------------------------------------------------&
 void CompresorAritmetico::prepararDescompresor()
 {
-    //Debemos completar el principio del archivo para comenzar la descompresion
-    //input->leerBytes(*valor,);
+    unsigned char byte;
+
+    //Leemos los primeros 64bits del archivo
+    for(register unsigned short i = 0; i<4; i++)
+    {
+        byte = input->leerBits(8);
+        valor <<=8; valor |= byte;
+    }
 
     return;
 }
@@ -145,6 +151,71 @@ void CompresorAritmetico::guardarBitsYValidarUnderflow()
         piso <<= 1;
         techo <<= 1;
         techo |= 1;
+    }
+}
+
+//&---------------------------------------------------------------------------&
+//& shiftYValidarUnderflow: Luego de descomprimir el rango hacemos el shift
+//&                         correspondiente de las variables y validamos el
+//&                         underflow
+//&---------------------------------------------------------------------------&
+void CompresorAritmetico::shiftYValidarUnderflow()
+{
+    unsigned char byte;
+    const unsigned short MSB = 0x8000;
+    const unsigned short segundoMSB = 0x4000;
+    const unsigned short ultimosBits = 0x3FFF;
+
+    /**Este metodo es muy parecido a guardarBitsYValidarUnderflow()
+    *   El tema es que aca no hay que guardar ningun bit en el archivo de salida
+    *   sino que hay que hacer los shifts correspondientes y leer el/los bits necesarios
+    *   del archivo comprimido. Falta terminar
+    *   Analizar posibilidad de usar un puntero a funcion, y juntar los dos metodos en uno
+    *   solo
+    */
+
+    for (;;)
+    {
+        //Validamos underflow
+        if ( ( (techo & MSB) != (piso & MSB) ) &&
+             ( (piso & segundoMSB) && !(techo & segundoMSB) ) )
+        {
+            //Eliminimo el segundoMSB, y corro todos los bits
+            piso = (piso & MSB) | ((piso & ultimosBits) << 1 );
+            techo = (techo & MSB) | ((techo & ultimosBits) << 1 );
+            techo |= 1;
+
+            //Incremento el contador de underflow
+            underflow++;
+            continue;
+        }
+
+        //Los MSB coinciden, entonces los guardamos en el archivo/
+        if ((techo & MSB) == (piso & MSB))
+        {
+            //guardarBit(piso & MSB); => No hay que guardar ningun bit..
+
+            //Sacamos los bits en underflow/
+            while (underflow > 0)
+            {
+                //guardarBit((techo & MSB) == 0); => No hay que guardar ningun bit..
+                underflow--;
+            }
+        }
+        else
+        {
+            //Salimo jugando...
+            return;
+        }
+
+        //Shift de variables/
+        piso <<= 1;
+        techo <<= 1;
+        techo |= 1;
+
+        //Leemos 1 bit del archivo comprimido
+        byte = input->leerBits(1);
+        valor <<=1; valor |= (byte & MSB)?1:0;
     }
 }
 

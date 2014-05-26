@@ -104,6 +104,7 @@ void Compresor::descomprimir(char *filename)
 {
     Direccion       bits;
     uint64_t        cantidadBytesDescomprimidos = 0;
+    unsigned short  cantidadBitsDescomprimidos = 0;
 
     //Abrimos los archivos
     if(abrirArchivosDescomprimir(filename))
@@ -123,6 +124,14 @@ void Compresor::descomprimir(char *filename)
 
         //Guardamos los dos bits
         //output_->guardarBits(bits);
+
+        //Actualizamos la cantidad de bytes descomprimidos
+        if(cantidadBitsDescomprimidos == 6)
+        {
+            cantidadBitsDescomprimidos = 0;
+            cantidadBytesDescomprimidos++;
+        }
+        else cantidadBitsDescomprimidos +=2;
     }
 }
 /**
