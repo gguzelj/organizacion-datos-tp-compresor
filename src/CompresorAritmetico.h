@@ -40,6 +40,7 @@ class CompresorAritmetico
         FileManagerOutput   *output;        //Ref. al archivo de salida
 
         void                guardarBitsYValidarUnderflow();
+        void                shiftYValidarUnderflow();
         void                guardarBit(const unsigned short bit);
 };
 

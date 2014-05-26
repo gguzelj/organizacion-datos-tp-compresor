@@ -50,7 +50,7 @@ class FileManagerInput : public FileManager
         virtual ~FileManagerInput();
 
         Direccion       leerDosBits();
-        std::list<Byte> leerBits(int cantidadBits);
+        unsigned char   leerBits(int cantidadBits);
         uint64_t        getCantidadBytesProcesados();
         uint64_t        getTamanioArchivoOriginal();
 
