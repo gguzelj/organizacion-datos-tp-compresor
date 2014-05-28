@@ -1,34 +1,34 @@
 #include "FileManager.h"
 
 /**
-//---------------------------------------------------------------------------&
+//----------------------------------------------------------------------------------------&
 // Clase:       FileManager
 // Descripcion: Esta clase es la encargada de hacer la lectura/escritura de
 // los archivos a comprimir/descomprimir
-//---------------------------------------------------------------------------&
+//----------------------------------------------------------------------------------------&
 */
 /**
-//---------------------------------------------------------------------------&
+//----------------------------------------------------------------------------------------&
 // P U B L I C
-//---------------------------------------------------------------------------&
+//----------------------------------------------------------------------------------------&
 */
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 //& FileManager: Constructor
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 FileManager::FileManager()
 {
 }
 
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 //& FileManager: Destructor
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 FileManager::~FileManager()
 {
 }
 
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 //& open: Abrimos un archivo en el modo especificado
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 int FileManager::open(const char *filename, std::ios::openmode mode)
 {
     file_.open(filename, mode);
@@ -43,6 +43,7 @@ int FileManager::open(const char *filename, std::ios::openmode mode)
         bytesEmitidos_ = 0;
         totalBytesArchivo_ = 0;
         bitsEmitidos_ = 0;
+        bufferSize_ = 0;
         bufferVacio_ = true;
         ultimoBloque_ = false;
 
@@ -54,56 +55,54 @@ int FileManager::open(const char *filename, std::ios::openmode mode)
     return 0;
 }
 
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 //& close: Cerramos el archivo
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 void FileManager::close()
 {
     file_.close();
 }
 
 /**
-//---------------------------------------------------------------------------&
+//----------------------------------------------------------------------------------------&
 // Clase:       FileManagerInput
 // Descripcion: Clase encargada de cargar y manejar el archivo a comprimir
-//---------------------------------------------------------------------------&
+//----------------------------------------------------------------------------------------&
 */
 /**
-//---------------------------------------------------------------------------&
+//----------------------------------------------------------------------------------------&
 // P U B L I C
-//---------------------------------------------------------------------------&
+//----------------------------------------------------------------------------------------&
 */
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 //& FileManagerInput: Constructor
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 FileManagerInput::FileManagerInput()
 {
 }
 
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 //& FileManagerInput: Destructor
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 FileManagerInput::~FileManagerInput()
 {
     delete[] buffer_;
 
     if (file_.is_open())
-    {
         file_.close();
-    }
 }
 
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 //& leerDosBits: Dentro de este metodo vamos a leer solamente 2 bits del
 //& archivo original, y los vamos a devolver para que puedan ser comprimidos
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 Direccion FileManagerInput::leerDosBits()
 {
     Direccion dir = (Direccion)ERROR_EOF;
 
     //Controlamos si debemos hacer un read al archivo para completar
     //el buffer con datos
-    if(bufferVacio_)
+    if(bytesEmitidos_ == bufferSize_)
     {
         bufferVacio_ = false;
         bytesEmitidos_ = 0;
@@ -133,25 +132,20 @@ Direccion FileManagerInput::leerDosBits()
         totalBytesArchivo_++;
     }
 
-    //En caso de haber leido todo el buffer, seteamos el flag para indicar
-    //que necesitamos leer una nueva parte del archivo
-    if(bytesEmitidos_ == bufferSize_)
-        bufferVacio_ = true;
-
     return dir;
 }
 
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 //& getCantidadBytesProcesados: Devolvemos la cantidad de bytes procesados
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 uint64_t FileManagerInput::getCantidadBytesProcesados()
 {
     return totalBytesArchivo_;
 }
 
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 //& getTamanioArchivoOriginal:  Devolvemos el tamanio del archivo original
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 uint64_t FileManagerInput::getTamanioArchivoOriginal()
 {
     char* tamanio = (char*)malloc(sizeof(uint64_t));
@@ -160,71 +154,58 @@ uint64_t FileManagerInput::getTamanioArchivoOriginal()
     //Leemos la cantidad de bytes del archivo original
     file_.seekg(0, file_.beg);
     file_.read(tamanio, sizeof(uint64_t));
+    filePos_ = sizeof(uint64_t);
+    file_.seekg(filePos_);
 
     strncpy((char*)&totalBytes, tamanio, 8);
 
     return totalBytes;
 }
 
-//&---------------------------------------------------------------------------&
-//& leerBits:   Leemos una determinada cantidad de bits del archivo.
-//&             Se pueden leer hasta 1byte
-//&---------------------------------------------------------------------------&
-unsigned char FileManagerInput::leerBits(int cantidadBits)
+//&---------------------------------------------------------------------------------------&
+//& leerBits:   Leemos un bit del archivo de entrada
+//&---------------------------------------------------------------------------------------&
+int FileManagerInput::leerBit()
 {
-    unsigned char   byte;
-    unsigned short  shift = 8 - cantidadBits;
+    int bit = ERROR_EOF;
 
-    while(cantidadBits)
+    //Controlamos si debemos hacer un read al archivo para completar
+    //el buffer con datos
+    if(bytesEmitidos_ == bufferSize_)
     {
-        //Controlamos si debemos hacer un read al archivo para completar el buffer con datos
-        if(bufferVacio_)
-        {
-            bufferVacio_ = false;
-            bytesEmitidos_ = 0;
-            if(this->read() == ERROR_EOF)
-                return byte;
-        }
-
-        //Almacenamos el nuevo bit del archivo
-        byte <<= 1; byte |=  (buffer_[bytesEmitidos_] & 0x80)?1:0;
-
-        //Hacemos un shitf logico del buffer
-        buffer_[bytesEmitidos_] <<= 1;
-
-        //Actualizamos contadores del fileManager
-        bitsEmitidos_ ++;
-
-        if(bitsEmitidos_ == 8)
-        {
-            bitsEmitidos_ = 0;
-            bytesEmitidos_++;
-        }
-
-        //En caso de haber leido todo el buffer, seteamos el flag para indicar
-        //que necesitamos leer una nueva parte del archivo
-        if(bytesEmitidos_ == bufferSize_)
-            bufferVacio_ = true;
-
-        cantidadBits--;
+        bufferVacio_ = false;
+        bytesEmitidos_ = 0;
+        if(this->read() == ERROR_EOF)
+            return bit;
     }
 
-    byte <<= shift;
+    //Analizamos el valor de los dos bits mas significativos
+    bit = (buffer_[bytesEmitidos_] & 0x80)?1:0;
 
-    return byte;
+    //Hacemos un shitf logico del buffer
+    buffer_[bytesEmitidos_] =buffer_[bytesEmitidos_]<< 1;
+
+    //Actualizamos contadores
+    bitsEmitidos_ += 1;
+
+    if(bitsEmitidos_ == 8)
+    {
+        bitsEmitidos_ = 0;
+        bytesEmitidos_++;
+        totalBytesArchivo_++;
+    }
+
+    return bit;
 }
-
-
 /**
-//---------------------------------------------------------------------------&
+//----------------------------------------------------------------------------------------&
 // P R I V A T E
-//---------------------------------------------------------------------------&
+//----------------------------------------------------------------------------------------&
 */
-//&---------------------------------------------------------------------------&
-//& read: Metodo encargado de leer el archivo a comprimir. El archivo puede
-//& estar partido en varias partes, que seran cargadas paulatinamente en el
-//& buffer
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
+//& read:   Metodo encargado de leer el archivo a comprimir. El archivo puede estar partido
+//&         en varias partes, que seran cargadas paulatinamente en el buffer
+//&---------------------------------------------------------------------------------------&
 int FileManagerInput::read()
 {
 
@@ -259,27 +240,28 @@ int FileManagerInput::read()
 }
 
 /**
-//---------------------------------------------------------------------------&
+//----------------------------------------------------------------------------------------&
 // Clase:       FileManagerOutput
 // Descripcion: Clase encargada de guardar y manejar el archivo a comprimido
-//---------------------------------------------------------------------------&
+//----------------------------------------------------------------------------------------&
 */
 
 /**
-//---------------------------------------------------------------------------&
+//----------------------------------------------------------------------------------------&
 // P U B L I C
-//---------------------------------------------------------------------------&
+//----------------------------------------------------------------------------------------&
 */
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 //& FileManagerOutput: Constructor
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 FileManagerOutput::FileManagerOutput()
 {
+    contadorBits_ = 0;
 }
 
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 //& FileManagerOutput: Destructor
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 FileManagerOutput::~FileManagerOutput()
 {
     delete[] buffer_;
@@ -290,9 +272,9 @@ FileManagerOutput::~FileManagerOutput()
     }
 }
 
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 //& open: Abrimos el archivo de salida
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 int FileManagerOutput::open(const char *filename, std::ios::openmode mode)
 {
     file_.open(filename, mode);
@@ -302,6 +284,7 @@ int FileManagerOutput::open(const char *filename, std::ios::openmode mode)
     {
         bytesEmitidos_ = 0;
         bitsEmitidos_ = 0;
+        contadorBits_ = 0;
     }
     else
     {
@@ -310,10 +293,9 @@ int FileManagerOutput::open(const char *filename, std::ios::openmode mode)
     return 0;
 }
 
-//&---------------------------------------------------------------------------&
-//& EscribirBits:   Metodo encargado de escribir la cantidad de bits recibidada
-//&                 por parametro en el archivo de salida
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
+//& EscribirByte:   Metodo encargado de escribir un byte en el arch. de salida
+//&---------------------------------------------------------------------------------------&
 int FileManagerOutput::escribirByte(Byte byte)
 {
     if(!file_.is_open())
@@ -325,13 +307,48 @@ int FileManagerOutput::escribirByte(Byte byte)
     return 0;
 }
 
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
+//& EscribirBits:   Metodo encargado de escribir dos bits en el arch. de salida
+//&---------------------------------------------------------------------------------------&
+int FileManagerOutput::escribirDosBits(Direccion bits)
+{
+    if(!file_.is_open())
+        return ERROR_ARCHIVO_CERRADO;
+
+
+    switch( bits )
+    {
+        case BITS_00:
+            guardarBit(0);
+            guardarBit(0);
+            break;
+
+        case BITS_01:
+            guardarBit(0);
+            guardarBit(1);
+            break;
+
+        case BITS_10:
+            guardarBit(1);
+            guardarBit(0);
+            break;
+
+        case BITS_11:
+            guardarBit(1);
+            guardarBit(1);
+            break;
+    }
+    return 0;
+}
+
+
+//&---------------------------------------------------------------------------------------&
 //& escribirTamanioArchivo: Escribimos en el archivo de salida la cantidad de
 //&                         bytes que tiene el archivo original.
 //&                         Esto se hace como alternativa al EOF, ya que si se
 //&                         utiliza este caracter especial, se reduce mucho el
 //&                         nivel de compresion
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 int FileManagerOutput::escribirTamanioArchivo(uint64_t tamanio)
 {
     if(!file_.is_open())
@@ -344,10 +361,10 @@ int FileManagerOutput::escribirTamanioArchivo(uint64_t tamanio)
     return 0;
 }
 
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 //& reservarEspacioTamanio: Reservamos los 8 bytes necesarios para guardar la
 //&                         cantidad de bytes que contiene el archivo original
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 int FileManagerOutput::reservarEspacioTamanio()
 {
     if(!file_.is_open())
@@ -361,8 +378,48 @@ int FileManagerOutput::reservarEspacioTamanio()
     return 0;
 }
 
+//&---------------------------------------------------------------------------------------&
+//& guardarBit: Metodo encargado de agrupar bits en bytes, y guardarlos en el
+//&             archivo de salida
+//&---------------------------------------------------------------------------------------&
+void FileManagerOutput::guardarBit(const unsigned short bit)
+{
+    contadorBits_++;
+
+    //Almacenamos el nuevo bit en el byteBuffer
+    byteBuffer_[8-contadorBits_] = (bit)?1:0;
+
+    //En caso de completar un byte entero, lo guardamos en el archivo
+    if(contadorBits_ == 8)
+    {
+        contadorBits_ = 0;
+        this->escribirByte(byteBuffer_);
+    }
+}
+
+//&---------------------------------------------------------------------------------------&
+//& flushBuffer:    Guardamos los bits que quedaron guardados en el buffer
+//&---------------------------------------------------------------------------------------&
+void FileManagerOutput::flushBuffer()
+{
+    while(contadorBits_ != 0)
+    {
+        contadorBits_++;
+
+        //Seteamos en 0 todos los bits no utilizados del byte
+        byteBuffer_[8-contadorBits_] = 0;
+
+        //En caso de completar un byte entero, lo guardamos en el archivo
+        if(contadorBits_ == 8)
+        {
+            contadorBits_ = 0;
+            this->escribirByte(byteBuffer_);
+        }
+    }
+}
+
 /**
-//---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 // P R I V A T E
-//---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 */

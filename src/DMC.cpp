@@ -1,13 +1,13 @@
 #include "DMC.h"
 
 /**
-//---------------------------------------------------------------------------&
+//----------------------------------------------------------------------------------------&
 // P U B L I C
-//---------------------------------------------------------------------------&
+//----------------------------------------------------------------------------------------&
 */
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 //& DMC: Constructor de la clase DMC
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 DMC::DMC()
 {
     //Creamos el estado inicial del modelo
@@ -15,9 +15,9 @@ DMC::DMC()
 }
 
 
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 //& ~DMC: Destructor de la clase DMC
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 DMC::~DMC()
 {
     std::list<Estado*>::iterator iter;
@@ -36,18 +36,18 @@ DMC::~DMC()
     estados.clear();
 }
 
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 //& getFrecuencias: Devolvemos las frecuencias de los siguientes estados
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 int* DMC::getFrecuencias()
 {
     return estadoActual->frecuencias;
 }
 
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 //& actualizarModelo: En este metodo nos encargamos de actualizar todo el
 //& modelo (clonaciones, frecuencias, controles, etc..)
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 void DMC::actualizarModelo(Direccion direccion)
 {
     //Validamos si es necesario clonar
@@ -77,16 +77,16 @@ void DMC::actualizarModelo(Direccion direccion)
 
 
 /**
-//---------------------------------------------------------------------------&
+//----------------------------------------------------------------------------------------&
 // P R I V A T E
-//---------------------------------------------------------------------------&
+//----------------------------------------------------------------------------------------&
 */
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 //& crearArbolInicial: Creamos el arbol inicial con el que comenzamos a operar
 //& Las correlaciones en los archivos se dan mas frecuentemente entre bytes que
 //& entre bits. Un posible modelo seria armar un arbol binario con 64 estados,
 //& y asi tendriamos todas las posibles combinaciones entre 00,01,10,11
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 void DMC::crearArbolInicial()
 {
     const Nombre limite = 21;
@@ -123,7 +123,7 @@ void DMC::crearArbolInicial()
 
         //En caso de llegar al limite fijado, dejamos de agregar nuevos estados,
         //y referenciamos cada hoja a la raiz
-        if(cantidadEstadosCreados < limite)
+        if(cantidadEstadosCreados <= limite)
             for(register int i = 0; i<4 ; i++)
                 colaDeEstados.push(est->estadosSiguientes[i]);
         else
@@ -137,14 +137,14 @@ void DMC::crearArbolInicial()
 }
 
 
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 //& hayQueClonar: En este metodo validamos si es necesario hacer la clonacion:
 //&
 //& El Estado candidato se clona si y sólo si el número de transiciones
 //& observadas desde el estado actual al estado candidato es mayor que MIN_CNTI,
 //& y el número de transiciones observadas desde todos los estados (con
 //& excepción del estado actual) en el Estado candidato es mayor que MIN_CNT2.
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 bool DMC::hayQueClonar(Direccion direccion)
 {
     int cantVisitas; //Cantidad de visitas que tuvo el nodo a clonar
@@ -161,9 +161,9 @@ bool DMC::hayQueClonar(Direccion direccion)
 }
 
 
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 //& clonarEstado: En este metodo realizamos la clonacion del estado
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 void DMC::clonarEstado(Direccion direccion)
 {
     double ratio;
@@ -201,10 +201,10 @@ void DMC::clonarEstado(Direccion direccion)
     estadoActual = nvoEst;
 }
 
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 //& verificarFrecuenciasDelEstado:  Validamos que el total de frecuencias no
 //&                                 supere el maximo previsto
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 void DMC::verificarFrecuenciasDelEstado()
 {
     unsigned short total_frecuencias = 0;

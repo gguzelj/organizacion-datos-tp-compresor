@@ -7,14 +7,14 @@
 using namespace std;
 
 /**
-//---------------------------------------------------------------------------&
+//----------------------------------------------------------------------------------------&
 // P U B L I C
-//---------------------------------------------------------------------------&
+//----------------------------------------------------------------------------------------&
 */
 
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 //& Compresor: Constructor de la clase Compresor
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 Compresor::Compresor()
 {
     this->dmc_                 = new DMC();
@@ -23,9 +23,9 @@ Compresor::Compresor()
     this->compresorAritmetico_ = new CompresorAritmetico( this->input_ , this->output_ );
 }
 
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 //& ~Compresor: Destructor de la clase Compresor
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 Compresor::~Compresor()
 {
     dmc_->~DMC();
@@ -41,9 +41,9 @@ Compresor::~Compresor()
     delete compresorAritmetico_;
 }
 
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 //& ejecutar: Leemos la opcion a ejecutar
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 void Compresor::ejecutar(int argc, char** argv)
 {
     std::string modoComprimir ("-c");
@@ -52,7 +52,7 @@ void Compresor::ejecutar(int argc, char** argv)
     if (argc != 3)
     {
         cout << "La cantidad de argumentos no es la correcta"<<endl;
-        return;
+        exit(-1);
     }
 
     std::string modo( argv[1] );
@@ -68,9 +68,9 @@ void Compresor::ejecutar(int argc, char** argv)
 
 }
 
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 //& Comprimir: Procedemos a comprimir el archivo
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 void Compresor::comprimir(char *filename)
 {
     Direccion bits;
@@ -78,6 +78,9 @@ void Compresor::comprimir(char *filename)
     //Abrimos los archivos
     if(abrirArchivosComprimir(filename))
         return;
+
+    //Preparamos el compresor
+    compresorAritmetico_->prepararCompresion();
 
     //Recorremos el archivo de a dos bits
     bits = input_->leerDosBits();
@@ -93,13 +96,16 @@ void Compresor::comprimir(char *filename)
         bits = input_->leerDosBits();
     }
 
+    //Terminamos la compresion
+    compresorAritmetico_->terminarCompresion();
+
     //Guardamos la cantidad total de bytes procesados
     output_->escribirTamanioArchivo( input_->getCantidadBytesProcesados() );
 }
 
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 //& Descomprimir: Procedemos a descomprimir el archivo
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 void Compresor::descomprimir(char *filename)
 {
     Direccion       bits;
@@ -111,7 +117,7 @@ void Compresor::descomprimir(char *filename)
         return;
 
     //Preparar compresor para descomprimir
-    compresorAritmetico_->prepararDescompresor();
+    compresorAritmetico_->prepararDescompresion();
 
     //Comenzamos a descomprimir
     while(cantidadBytesDescomprimidos < totalBytesArchivo_)
@@ -123,7 +129,7 @@ void Compresor::descomprimir(char *filename)
         dmc_->actualizarModelo(bits);
 
         //Guardamos los dos bits
-        //output_->guardarBits(bits);
+        output_->escribirDosBits(bits);
 
         //Actualizamos la cantidad de bytes descomprimidos
         if(cantidadBitsDescomprimidos == 6)
@@ -135,15 +141,15 @@ void Compresor::descomprimir(char *filename)
     }
 }
 /**
-//---------------------------------------------------------------------------&
+//----------------------------------------------------------------------------------------&
 // P R I V A T E
-//---------------------------------------------------------------------------&
+//----------------------------------------------------------------------------------------&
 */
 
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 //& abrirArchivosComprimir: Abrimos los archivos para trabajar en la
 //&                         compresion
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 int Compresor::abrirArchivosComprimir(char *filename)
 {
     const char* NUMERO_GRUPO = ".13";
@@ -156,32 +162,28 @@ int Compresor::abrirArchivosComprimir(char *filename)
     //Abrimos el archivo a comprimir
     if( input_->open(filename, ios::in|ios::binary|ios::ate) == ERROR_APERTURA_ARCHIVO )
     {
-        cout << "ERROR: No se pudo abrir el archivo para comprimir"<<endl;
-        delete filenameOut;
-        return ERROR_APERTURA_ARCHIVO;
+        cout << "ERROR: No se pudo abrir el archivo " << filename <<endl;
+        exit(-1);
     }
 
     //Abrimos el archivo de salida
     if(output_->open(filenameOut,std::ios::binary))
     {
-        cout << "ERROR: No se pudo abrir el archivo de salida"<<endl;
-        delete filenameOut;
-        return ERROR_APERTURA_ARCHIVO;
+        cout << "ERROR: No se pudo crear el archivo " << filenameOut <<endl;
+        exit(-1);
     }
 
     //En caso de poder abrir el archivo de salida, reservamos los primeros 8 bytes
     //para guardar la cantidad de bytes que procesa el compresor
     output_->reservarEspacioTamanio();
 
-    //Liberamos variables
-    delete filenameOut;
     return 0;
 }
 
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 //& abrirArchivosDescomprimir:  Abrimos los archivos para trabajar en la
 //&                             Descompresion
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 int Compresor::abrirArchivosDescomprimir(char *filename)
 {
     const char* NUMERO_GRUPO = ".13";
@@ -201,23 +203,20 @@ int Compresor::abrirArchivosDescomprimir(char *filename)
     //Abrimos el archivo a comprimir
     if( input_->open(filename, ios::in|ios::binary|ios::ate) == ERROR_APERTURA_ARCHIVO )
     {
-        cout << "ERROR: No se pudo abrir el archivo para comprimir"<<endl;
-        delete filenameOut;
-        return ERROR_APERTURA_ARCHIVO;
+        cout << "ERROR: No se pudo abrir el archivo " << filename <<endl;
+        exit(-1);
     }
 
     //Abrimos el archivo de salida
     if(output_->open(filenameOut,std::ios::binary))
     {
-        cout << "ERROR: No se pudo abrir el archivo de salida"<<endl;
-        delete filenameOut;
-        return ERROR_APERTURA_ARCHIVO;
+        cout << "ERROR: No se pudo crear el archivo " << filenameOut <<endl;
+        exit(-1);
     }
 
     //Leemos la cantidad de bytes del archivo original
     totalBytesArchivo_ = input_->getTamanioArchivoOriginal();
 
     //Liberamos variables
-    delete filenameOut;
     return 0;
 }
