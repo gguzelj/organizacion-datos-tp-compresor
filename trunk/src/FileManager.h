@@ -4,11 +4,11 @@
 #include "utils/constantes.h"
 
 /**
-//---------------------------------------------------------------------------&
+//----------------------------------------------------------------------------------------&
 // Clase:           FileManager
 // Descripcion:     Esta clase es la encargada de hacer la lectura/escritura
 //                  de los archivos a comprimir/descomprimir
-//---------------------------------------------------------------------------&
+//----------------------------------------------------------------------------------------&
 */
 class FileManager
 {
@@ -33,60 +33,68 @@ class FileManager
         bool            ultimoBloque_;
 };
 /**
-//---------------------------------------------------------------------------&
+//----------------------------------------------------------------------------------------&
 // Clase:           FileManagerInput
 // Descripcion:     Clase encargada de cargar y almacenar el archivo a
 //                  comprimir / descomprimir
-//---------------------------------------------------------------------------&
+//----------------------------------------------------------------------------------------&
 */
 class FileManagerInput : public FileManager
 {
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 //& P U B L I C
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
     public:
 
         FileManagerInput();
         virtual ~FileManagerInput();
 
         Direccion       leerDosBits();
-        unsigned char   leerBits(int cantidadBits);
+        int             leerBit();
         uint64_t        getCantidadBytesProcesados();
         uint64_t        getTamanioArchivoOriginal();
 
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 //& P R I V A T E
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
     private:
-
-        int read();
+        int             read();
 };
 
 /**
-//---------------------------------------------------------------------------&
+//----------------------------------------------------------------------------------------&
 // Clase:           FileManagerOutput
 // Descripcion:     Clase encargada de guardar y manejar el archivo a
 //                  comprimir / descomprimir
-//---------------------------------------------------------------------------&
+//----------------------------------------------------------------------------------------&
 */
 class FileManagerOutput : public FileManager {
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
 //& P U B L I C
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
     public:
 
+        /** Metodos     */
         FileManagerOutput();
         virtual ~FileManagerOutput();
 
-        int open(const char *filename, std::ios::openmode mode);
-        int escribirByte(Byte byte);
-        int escribirTamanioArchivo(uint64_t tamanio);
-        int reservarEspacioTamanio();
+        int             open(const char *filename, std::ios::openmode mode);
 
-//&---------------------------------------------------------------------------&
+        void            guardarBit(const unsigned short bit);
+        int             escribirByte(Byte byte);
+        int             escribirDosBits(Direccion bits);
+        int             escribirTamanioArchivo(uint64_t tamanio);
+        void            flushBuffer();
+        int             reservarEspacioTamanio();
+
+//&---------------------------------------------------------------------------------------&
 //& P R I V A T E
-//&---------------------------------------------------------------------------&
+//&---------------------------------------------------------------------------------------&
     private:
+
+        /** Atributos   */
+        Byte            byteBuffer_;     //Buffer de Bytes
+        unsigned short  contadorBits_;   //Contador de bits enviados
         std::ofstream   file_;
 };
 #endif // FILEMANAGER_H
