@@ -86,7 +86,7 @@ FileManagerInput::FileManagerInput()
 //&---------------------------------------------------------------------------------------&
 FileManagerInput::~FileManagerInput()
 {
-    delete[] buffer_;
+    if(buffer_) delete buffer_;
 
     if (file_.is_open())
         file_.close();
@@ -148,6 +148,10 @@ uint64_t FileManagerInput::getCantidadBytesProcesados()
 //&---------------------------------------------------------------------------------------&
 uint64_t FileManagerInput::getTamanioArchivoOriginal()
 {
+
+    if(!file_.is_open())
+        return ERROR_APERTURA_ARCHIVO;
+
     char* tamanio = (char*)malloc(sizeof(uint64_t));
     uint64_t totalBytes = 0;
 
@@ -157,7 +161,8 @@ uint64_t FileManagerInput::getTamanioArchivoOriginal()
     filePos_ = sizeof(uint64_t);
     file_.seekg(filePos_);
 
-    strncpy((char*)&totalBytes, tamanio, 8);
+    memcpy(&totalBytes, tamanio, 8);
+    delete tamanio;
 
     return totalBytes;
 }
@@ -208,7 +213,6 @@ int FileManagerInput::leerBit()
 //&---------------------------------------------------------------------------------------&
 int FileManagerInput::read()
 {
-
     if(ultimoBloque_)
         return ERROR_EOF;
 
@@ -217,7 +221,7 @@ int FileManagerInput::read()
         //El archivo entra en memoria
         unsigned int bufferSize = fileSize_ - filePos_;
 
-        delete buffer_;
+        if(buffer_) delete buffer_;
         buffer_ = new char[bufferSize];
         file_.seekg (filePos_);
         file_.read (buffer_, ( bufferSize ));
@@ -228,7 +232,7 @@ int FileManagerInput::read()
     else
     {
         //El archivo no entra en memoria=> leemos una parte
-        delete buffer_;
+        if(buffer_) delete buffer_;
         buffer_ = new char[TAMANO_MAX_BUFFER];
         file_.seekg (filePos_);
         file_.read (buffer_, TAMANO_MAX_BUFFER);
@@ -264,7 +268,7 @@ FileManagerOutput::FileManagerOutput()
 //&---------------------------------------------------------------------------------------&
 FileManagerOutput::~FileManagerOutput()
 {
-    delete[] buffer_;
+    if(buffer_) delete buffer_;
 
     if (file_.is_open())
     {

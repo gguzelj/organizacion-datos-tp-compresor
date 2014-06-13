@@ -152,7 +152,6 @@ void Compresor::descomprimir(char *filename)
 //&---------------------------------------------------------------------------------------&
 int Compresor::abrirArchivosComprimir(char *filename)
 {
-    const char* NUMERO_GRUPO = ".13";
     char* filenameOut = (char*) malloc(strlen(filename)+strlen(NUMERO_GRUPO)+1);
 
     //Armamos el nombre del archivo de salida
@@ -163,6 +162,7 @@ int Compresor::abrirArchivosComprimir(char *filename)
     if( input_->open(filename, ios::in|ios::binary|ios::ate) == ERROR_APERTURA_ARCHIVO )
     {
         cout << "ERROR: No se pudo abrir el archivo " << filename <<endl;
+        free(filenameOut);
         exit(-1);
     }
 
@@ -170,6 +170,7 @@ int Compresor::abrirArchivosComprimir(char *filename)
     if(output_->open(filenameOut,std::ios::binary))
     {
         cout << "ERROR: No se pudo crear el archivo " << filenameOut <<endl;
+        free(filenameOut);
         exit(-1);
     }
 
@@ -177,6 +178,7 @@ int Compresor::abrirArchivosComprimir(char *filename)
     //para guardar la cantidad de bytes que procesa el compresor
     output_->reservarEspacioTamanio();
 
+    free(filenameOut);
     return 0;
 }
 
@@ -186,7 +188,6 @@ int Compresor::abrirArchivosComprimir(char *filename)
 //&---------------------------------------------------------------------------------------&
 int Compresor::abrirArchivosDescomprimir(char *filename)
 {
-    const char* NUMERO_GRUPO = ".13";
     const char nombreValido = strstr(filename, NUMERO_GRUPO) != NULL;
 
     if(!nombreValido)
@@ -204,6 +205,7 @@ int Compresor::abrirArchivosDescomprimir(char *filename)
     if( input_->open(filename, ios::in|ios::binary|ios::ate) == ERROR_APERTURA_ARCHIVO )
     {
         cout << "ERROR: No se pudo abrir el archivo " << filename <<endl;
+        free(filenameOut);
         exit(-1);
     }
 
@@ -211,12 +213,13 @@ int Compresor::abrirArchivosDescomprimir(char *filename)
     if(output_->open(filenameOut,std::ios::binary))
     {
         cout << "ERROR: No se pudo crear el archivo " << filenameOut <<endl;
+        free(filenameOut);
         exit(-1);
     }
 
     //Leemos la cantidad de bytes del archivo original
     totalBytesArchivo_ = input_->getTamanioArchivoOriginal();
 
-    //Liberamos variables
+    free(filenameOut);
     return 0;
 }

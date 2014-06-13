@@ -54,4 +54,6 @@ const int ERROR_EOF                     = 4;
 
 const unsigned char BIT_MASK            = 0xC0;
 
+const char NUMERO_GRUPO[4]              = ".13";
+
 #endif // CONSTANTES_H_INCLUDED
