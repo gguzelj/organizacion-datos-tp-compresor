@@ -46,9 +46,11 @@ class FileManagerInput : public FileManager
 //&---------------------------------------------------------------------------------------&
     public:
 
+        /** Metodos     */
         FileManagerInput();
         virtual ~FileManagerInput();
 
+        /** Atributos   */
         Direccion       leerDosBits();
         int             leerBit();
         uint64_t        getCantidadBytesProcesados();
@@ -58,6 +60,7 @@ class FileManagerInput : public FileManager
 //& P R I V A T E
 //&---------------------------------------------------------------------------------------&
     private:
+        /** Metodos     */
         int             read();
 };
 
@@ -79,7 +82,6 @@ class FileManagerOutput : public FileManager {
         virtual ~FileManagerOutput();
 
         int             open(const char *filename, std::ios::openmode mode);
-
         void            guardarBit(const unsigned short bit);
         int             escribirByte(Byte byte);
         int             escribirDosBits(Direccion bits);

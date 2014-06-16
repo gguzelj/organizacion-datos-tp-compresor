@@ -39,8 +39,8 @@ const Direccion BITS_01                 = 1;
 const Direccion BITS_10                 = 2;
 const Direccion BITS_11                 = 3;
 
-const int MIN_CNT1                      = 1000;
-const int MIN_CNT2                      = 745;
+const int MIN_CNT1                      = 50;
+const int MIN_CNT2                      = 12;
 
 const unsigned long LIMITE_ESTADOS      = 13107200;//40 Bytes por estado =>13107200=500Mb
 const unsigned short LIMITE_FRECUENCIAS = 16383;   //Max frecuencias acumuladas(2^14 - 1)

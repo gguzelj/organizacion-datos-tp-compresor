@@ -26,7 +26,6 @@ class Compresor
         void ejecutar(int argc, char** argv);
         void comprimir(char *filename);
         void descomprimir(char *filename);
-
 //&---------------------------------------------------------------------------------------&
 //& P R I V A T E
 //&---------------------------------------------------------------------------------------&

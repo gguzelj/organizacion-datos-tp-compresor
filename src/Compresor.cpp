@@ -1,9 +1,4 @@
 #include "Compresor.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 using namespace std;
 
 /**
@@ -28,16 +23,9 @@ Compresor::Compresor()
 //&---------------------------------------------------------------------------------------&
 Compresor::~Compresor()
 {
-    dmc_->~DMC();
     delete dmc_;
-
-    input_->~FileManagerInput();
     delete input_;
-
-    output_->~FileManagerOutput();
     delete output_;
-
-    compresorAritmetico_->~CompresorAritmetico();
     delete compresorAritmetico_;
 }
 
