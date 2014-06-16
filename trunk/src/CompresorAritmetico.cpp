@@ -34,7 +34,8 @@ void CompresorAritmetico::prepararCompresion()
 
 //&---------------------------------------------------------------------------------------&
 //& comprimir:  Comprimimos los bits recibidos
-//&             http://www.arturocampos.com/ac_arithmetic.html
+//&             ARITHMETIC CODING FOR DATA COIUPRESSION
+//&     http://www.stanford.edu/class/ee398a/handouts/papers/WittenACM87ArithmCoding.pdf
 //&---------------------------------------------------------------------------------------&
 void CompresorAritmetico::comprimir(Direccion bits, int* frecuencias)
 {
@@ -104,7 +105,8 @@ void CompresorAritmetico::prepararDescompresion()
 }
 //&---------------------------------------------------------------------------------------&
 //& descomprimir:  Descomprimimos el archivo
-//&             http://www.arturocampos.com/ac_arithmetic.html
+//&             ARITHMETIC CODING FOR DATA COIUPRESSION
+//&     http://www.stanford.edu/class/ee398a/handouts/papers/WittenACM87ArithmCoding.pdf
 //&---------------------------------------------------------------------------------------&
 Direccion CompresorAritmetico::descomprimir(int* frecuencias)
 {

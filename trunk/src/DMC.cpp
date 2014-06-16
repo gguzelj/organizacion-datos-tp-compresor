@@ -26,10 +26,7 @@ DMC::~DMC()
     //Recorro todos los estados y llamo a su destructor
     while(iter != estados.end())
     {
-        (*iter)->~Estado();
-
         delete *iter;
-
         iter++;
     }
 
@@ -65,11 +62,11 @@ void DMC::actualizarModelo(Direccion direccion)
 
     //Controlamos la cantidad de estados creados
     if(cantidadEstadosCreados > LIMITE_ESTADOS )
-        {
-            this->~DMC();
-            crearArbolInicial();
-            return;
-        }
+    {
+        this->~DMC();
+        crearArbolInicial();
+        return;
+    }
 
     //movemos el estado actual
     estadoActual = estadoActual->estadosSiguientes[direccion];

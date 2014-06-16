@@ -86,7 +86,7 @@ FileManagerInput::FileManagerInput()
 //&---------------------------------------------------------------------------------------&
 FileManagerInput::~FileManagerInput()
 {
-    if(buffer_) delete buffer_;
+    delete buffer_;
 
     if (file_.is_open())
         file_.close();
@@ -221,26 +221,23 @@ int FileManagerInput::read()
         //El archivo entra en memoria
         unsigned int bufferSize = fileSize_ - filePos_;
 
-        if(buffer_) delete buffer_;
         buffer_ = new char[bufferSize];
         file_.seekg (filePos_);
         file_.read (buffer_, ( bufferSize ));
         ultimoBloque_ = true;
         bufferSize_ = bufferSize ;
-        return 0;
     }
     else
     {
         //El archivo no entra en memoria=> leemos una parte
-        if(buffer_) delete buffer_;
         buffer_ = new char[TAMANO_MAX_BUFFER];
         file_.seekg (filePos_);
         file_.read (buffer_, TAMANO_MAX_BUFFER);
         filePos_ += TAMANO_MAX_BUFFER;
         bufferSize_ = TAMANO_MAX_BUFFER;
         cantPartes_--;
-        return 0;
     }
+    return 0;
 }
 
 /**
@@ -268,12 +265,8 @@ FileManagerOutput::FileManagerOutput()
 //&---------------------------------------------------------------------------------------&
 FileManagerOutput::~FileManagerOutput()
 {
-    if(buffer_) delete buffer_;
-
     if (file_.is_open())
-    {
         file_.close();
-    }
 }
 
 //&---------------------------------------------------------------------------------------&
