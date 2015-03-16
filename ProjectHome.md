@@ -1,0 +1,1 @@
+El objetivo de este TP es realizar un compresor de archivos de propósito general. El método de compresión a usar debe ser creado por el grupo desde cero o bien ser una mejora o modificación a algún método de compresión existente. No se aceptan compresores que sean una implementación “Vainilla” de algún método de compresión conocido.
